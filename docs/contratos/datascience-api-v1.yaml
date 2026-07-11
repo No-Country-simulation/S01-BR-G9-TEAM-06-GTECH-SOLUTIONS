@@ -1,0 +1,264 @@
+openapi: 3.1.0
+
+info:
+  title: IntelliWatts Data Science API
+  version: 1.0.0
+  description: |
+    Contrato interno entre o backend Java e o serviço Python de Data Science.
+
+    O backend valida a entrada pública, acrescenta a tarifa de referência e chama
+    esta API. O serviço Python classifica o consumo energético, calcula a
+    probabilidade, gera recomendações e estima o custo.
+
+    Autenticação entre serviços não faz parte do MVP. Qualquer mudança
+    incompatível neste contrato deve gerar uma nova versão da rota.
+
+servers:
+  - url: http://localhost:8000
+    description: Desenvolvimento local
+  - url: http://datascience:8000
+    description: Rede interna do ambiente com containers
+
+tags:
+  - name: Inferências
+    description: Operações de análise realizadas pelo modelo de Data Science
+
+paths:
+  /v1/inferencias:
+    post:
+      tags:
+        - Inferências
+      summary: Analisar consumo energético
+      description: |
+        Recebe os indicadores normalizados pelo backend e retorna a classificação,
+        a probabilidade, as recomendações, a estimativa financeira e a versão do
+        modelo utilizado.
+
+        O backend espera a resposta em até 1.800 ms e não repete automaticamente
+        a chamada. Qualquer resposta de erro ou resposta inválida é convertida pelo
+        backend público em `503 SERVICO_INFERENCIA_INDISPONIVEL`.
+      operationId: analisarConsumoEnergetico
+      security: []
+      x-timeout-ms: 1800
+      requestBody:
+        required: true
+        description: Indicadores de consumo e tarifa de referência selecionada pelo backend
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InferenciaRequest'
+            examples:
+              comercioModerado:
+                summary: Exemplo de consumo moderado em um comércio
+                value:
+                  consumo_kwh: 305
+                  uso_horario_pico: false
+                  quantidade_equipamentos: 13
+                  tipo_imovel: Comércio
+                  horas_alto_consumo: 2
+                  tarifa_referencia: 0.75
+      responses:
+        '200':
+          description: Análise concluída com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InferenciaResponse'
+              examples:
+                moderado:
+                  summary: Resultado classificado como moderado
+                  value:
+                    categoria: Moderado
+                    probabilidade: 0.78
+                    recomendacoes:
+                      - causa: uso_horario_pico
+                        descricao: Reduzir o uso de equipamentos no horário de pico.
+                    estimativa_financeira:
+                      consumo_kwh: 305
+                      tarifa_referencia: 0.75
+                      custo_estimado: 228.75
+                    modelo_versao: random-forest-v1
+        '400':
+          $ref: '#/components/responses/EntradaInvalida'
+        '500':
+          $ref: '#/components/responses/ErroInferencia'
+        '503':
+          $ref: '#/components/responses/ModeloIndisponivel'
+
+components:
+  schemas:
+    InferenciaRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - consumo_kwh
+        - uso_horario_pico
+        - quantidade_equipamentos
+        - tipo_imovel
+        - horas_alto_consumo
+        - tarifa_referencia
+      properties:
+        consumo_kwh:
+          type: number
+          exclusiveMinimum: 0
+          description: Consumo energético mensal em kWh
+          examples:
+            - 305
+        uso_horario_pico:
+          type: boolean
+          description: Informa se existe uso relevante no horário de pico
+          examples:
+            - false
+        quantidade_equipamentos:
+          type: integer
+          minimum: 0
+          description: Quantidade de equipamentos do imóvel; zero é um valor válido
+          examples:
+            - 13
+        tipo_imovel:
+          type: string
+          enum:
+            - Casa
+            - Apartamento
+            - Comércio
+          description: Tipo canônico de imóvel acordado entre Backend e Data Science
+          examples:
+            - Comércio
+        horas_alto_consumo:
+          type: integer
+          minimum: 0
+          maximum: 24
+          description: Quantidade diária de horas de alto consumo; zero é um valor válido
+          examples:
+            - 2
+        tarifa_referencia:
+          type: number
+          exclusiveMinimum: 0
+          description: Tarifa em R$/kWh selecionada e enviada pelo backend
+          examples:
+            - 0.75
+
+    InferenciaResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - categoria
+        - probabilidade
+        - recomendacoes
+        - estimativa_financeira
+        - modelo_versao
+      properties:
+        categoria:
+          type: string
+          enum:
+            - Eficiente
+            - Moderado
+            - Ineficiente
+          description: Classificação final produzida pelo modelo
+        probabilidade:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Probabilidade da categoria escolhida, representada entre zero e um
+        recomendacoes:
+          type: array
+          minItems: 1
+          description: Recomendações estruturadas para melhorar a eficiência energética
+          items:
+            $ref: '#/components/schemas/Recomendacao'
+        estimativa_financeira:
+          $ref: '#/components/schemas/EstimativaFinanceira'
+        modelo_versao:
+          type: string
+          minLength: 1
+          description: Identificador da versão do modelo utilizado na inferência
+          examples:
+            - random-forest-v1
+
+    Recomendacao:
+      type: object
+      additionalProperties: false
+      required:
+        - causa
+        - descricao
+      properties:
+        causa:
+          type: string
+          minLength: 1
+          description: Identificador técnico do fator que originou a recomendação
+          examples:
+            - uso_horario_pico
+        descricao:
+          type: string
+          minLength: 1
+          description: Texto da recomendação que será apresentado ao usuário
+          examples:
+            - Reduzir o uso de equipamentos no horário de pico.
+
+    EstimativaFinanceira:
+      type: object
+      additionalProperties: false
+      required:
+        - consumo_kwh
+        - tarifa_referencia
+        - custo_estimado
+      properties:
+        consumo_kwh:
+          type: number
+          exclusiveMinimum: 0
+          description: Mesmo consumo recebido na requisição
+        tarifa_referencia:
+          type: number
+          exclusiveMinimum: 0
+          description: Mesma tarifa recebida na requisição
+        custo_estimado:
+          type: number
+          minimum: 0
+          description: Custo estimado calculado pelo serviço de Data Science
+
+    ErroResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - erro
+        - mensagem
+      properties:
+        erro:
+          type: string
+          minLength: 1
+          description: Código estável e legível por máquina
+        mensagem:
+          type: string
+          minLength: 1
+          description: Explicação técnica resumida da falha
+
+  responses:
+    EntradaInvalida:
+      description: JSON ausente, inválido ou com campos fora do contrato
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErroResponse'
+          example:
+            erro: ENTRADA_INVALIDA
+            mensagem: tipo_imovel possui um valor desconhecido
+
+    ErroInferencia:
+      description: Erro inesperado durante a execução da inferência
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErroResponse'
+          example:
+            erro: ERRO_INFERENCIA
+            mensagem: Não foi possível concluir a análise energética
+
+    ModeloIndisponivel:
+      description: Modelo não carregado ou temporariamente indisponível
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErroResponse'
+          example:
+            erro: MODELO_INDISPONIVEL
+            mensagem: O modelo de análise energética não está disponível
