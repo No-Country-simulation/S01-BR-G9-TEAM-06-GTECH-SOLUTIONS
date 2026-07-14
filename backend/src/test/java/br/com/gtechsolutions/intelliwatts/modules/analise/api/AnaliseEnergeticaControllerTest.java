@@ -10,15 +10,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.math.BigDecimal;
 import java.util.List;
 
-import br.com.gtechsolutions.intelliwatts.core.api.GlobalExceptionHandler;
-import br.com.gtechsolutions.intelliwatts.core.exceptions.ServicoInferenciaIndisponivelException;
-import br.com.gtechsolutions.intelliwatts.modules.analise.api.dto.AnaliseEnergeticaResponse;
-import br.com.gtechsolutions.intelliwatts.modules.analise.application.AnalisarConsumoEnergeticoUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
+
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.json.JsonMapper;
+
+import br.com.gtechsolutions.intelliwatts.core.api.GlobalExceptionHandler;
+import br.com.gtechsolutions.intelliwatts.core.exceptions.ServicoInferenciaIndisponivelException;
+import br.com.gtechsolutions.intelliwatts.modules.analise.api.dto.AnaliseEnergeticaResponse;
+import br.com.gtechsolutions.intelliwatts.modules.analise.application.AnalisarConsumoEnergeticoUseCase;
 
 class AnaliseEnergeticaControllerTest {
 
@@ -28,110 +34,161 @@ class AnaliseEnergeticaControllerTest {
     @BeforeEach
     void setUp() {
         useCase = mock(AnalisarConsumoEnergeticoUseCase.class);
+        JsonMapper.Builder jsonMapperBuilder = JsonMapper.builder()
+        .disable(MapperFeature.ALLOW_COERCION_OF_SCALARS)
+        .disable(DeserializationFeature.ACCEPT_FLOAT_AS_INT)
+        .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
         mockMvc = MockMvcBuilders
                 .standaloneSetup(new AnaliseEnergeticaController(useCase))
+                .setMessageConverters(
+                    new JacksonJsonHttpMessageConverter(jsonMapperBuilder))
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .build();
     }
 
     @Test
-    void deveRetornarAnaliseEnergetica() throws Exception {
+    void deveRetornarContratoPublicoDoMvp() throws Exception {
         when(useCase.executar(any())).thenReturn(responseValido());
 
-        mockMvc.perform(post("/api/v1/analises-energeticas")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestValido()))
+        mockMvc.perform(post("/analise-energetica")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestValido()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.categoria").value("Moderado"))
                 .andExpect(jsonPath("$.probabilidade").value(0.78))
-                .andExpect(jsonPath("$.recomendacoes[0].causa").value("uso_horario_pico"))
-                .andExpect(jsonPath("$.estimativaFinanceira.custoEstimado").value(228.75))
-                .andExpect(jsonPath("$.modeloVersao").value("random-forest-v1"));
+                .andExpect(jsonPath("$.recomendacoes[0]").value(
+                        "Reduzir o uso de equipamentos no horário de pico."))
+                .andExpect(jsonPath("$.custo_estimado_mensal").value(228.75))
+                .andExpect(jsonPath("$.estimativaFinanceira").doesNotExist())
+                .andExpect(jsonPath("$.modeloVersao").doesNotExist());
     }
 
     @Test
-    void deveAceitarComercioComZeroEquipamentosEZeroHoras() throws Exception {
-        when(useCase.executar(any())).thenReturn(responseValido());
+    void deveRejeitarZeroEquipamentosEZeroHoras() throws Exception {
+        mockMvc.perform(post("/analise-energetica")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                          "consumo_kwh": 100,
+                          "uso_horario_pico": false,
+                          "quantidade_equipamentos": 0,
+                          "tipo_imovel": "Comércio",
+                          "horas_alto_consumo": 0
+                        }
+                        """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.codigo").value("ENTRADA_INVALIDA"))
+                .andExpect(jsonPath("$.erros.quantidade_equipamentos").exists())
+                .andExpect(jsonPath("$.erros.horas_alto_consumo").exists());
+    }
 
-        mockMvc.perform(post("/api/v1/analises-energeticas")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "consumoKwh": 100,
-                                  "usoHorarioPico": false,
-                                  "quantidadeEquipamentos": 0,
-                                  "tipoImovel": "Comércio",
-                                  "horasAltoConsumo": 0
-                                }
-                                """))
-                .andExpect(status().isOk());
+    @Test
+    void deveRejeitarQuantidadeEquipamentosComoTexto() throws Exception {
+        mockMvc.perform(post("/analise-energetica")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                          "consumo_kwh": 100,
+                          "uso_horario_pico": false,
+                          "quantidade_equipamentos": "13",
+                          "tipo_imovel": "Comércio",
+                          "horas_alto_consumo": 2
+                        }
+                        """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.codigo").value("JSON_INVALIDO"));
     }
 
     @Test
     void deveRetornarBadRequestParaEntradaInvalida() throws Exception {
-        mockMvc.perform(post("/api/v1/analises-energeticas")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "consumoKwh": 0,
-                                  "quantidadeEquipamentos": -1,
-                                  "tipoImovel": "",
-                                  "horasAltoConsumo": 25
-                                }
-                                """))
+        mockMvc.perform(post("/analise-energetica")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                          "consumo_kwh": 0,
+                          "quantidade_equipamentos": -1,
+                          "tipo_imovel": "",
+                          "horas_alto_consumo": 25
+                        }
+                        """))
                 .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.codigo").value("ENTRADA_INVALIDA"))
-                .andExpect(jsonPath("$.erros.consumoKwh").exists())
-                .andExpect(jsonPath("$.erros.usoHorarioPico").exists())
-                .andExpect(jsonPath("$.erros.quantidadeEquipamentos").exists())
-                .andExpect(jsonPath("$.erros.tipoImovel").exists())
-                .andExpect(jsonPath("$.erros.horasAltoConsumo").exists());
+                .andExpect(jsonPath("$.caminho").value("/analise-energetica"))
+                .andExpect(jsonPath("$.erros.consumo_kwh").exists())
+                .andExpect(jsonPath("$.erros.uso_horario_pico").exists())
+                .andExpect(jsonPath("$.erros.quantidade_equipamentos").exists())
+                .andExpect(jsonPath("$.erros.tipo_imovel").exists())
+                .andExpect(jsonPath("$.erros.horas_alto_consumo").exists());
     }
 
     @Test
-    void deveRejeitarPequenoEstabelecimentoComoTipoImovel() throws Exception {
-        mockMvc.perform(post("/api/v1/analises-energeticas")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "consumoKwh": 305,
-                                  "usoHorarioPico": false,
-                                  "quantidadeEquipamentos": 13,
-                                  "tipoImovel": "Pequeno estabelecimento",
-                                  "horasAltoConsumo": 2
-                                }
-                                """))
+    void deveRejeitarTipoImovelDesconhecido() throws Exception {
+        mockMvc.perform(post("/analise-energetica")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                          "consumo_kwh": 305,
+                          "uso_horario_pico": false,
+                          "quantidade_equipamentos": 13,
+                          "tipo_imovel": "Pequeno estabelecimento",
+                          "horas_alto_consumo": 2
+                        }
+                        """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.codigo").value("ENTRADA_INVALIDA"))
-                .andExpect(jsonPath("$.erros.tipoImovel").value(
-                        "tipoImovel deve ser Casa, Apartamento ou Comércio"
-                ));
+                .andExpect(jsonPath("$.erros.tipo_imovel").value(
+                        "tipo_imovel deve ser Casa, Apartamento ou Comércio"));
+    }
+
+    @Test
+    void deveRetornarBadRequestParaJsonInvalido() throws Exception {
+        mockMvc.perform(post("/analise-energetica")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.codigo").value("JSON_INVALIDO"))
+                .andExpect(jsonPath("$.caminho").value("/analise-energetica"));
     }
 
     @Test
     void deveRetornarServiceUnavailableQuandoInferenciaFalhar() throws Exception {
         when(useCase.executar(any())).thenThrow(
-                new ServicoInferenciaIndisponivelException("Falha interna")
-        );
+                new ServicoInferenciaIndisponivelException("Falha interna"));
 
-        mockMvc.perform(post("/api/v1/analises-energeticas")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestValido()))
+        mockMvc.perform(post("/analise-energetica")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestValido()))
                 .andExpect(status().isServiceUnavailable())
-                .andExpect(jsonPath("$.codigo").value("SERVICO_INFERENCIA_INDISPONIVEL"))
-                .andExpect(jsonPath("$.mensagem").value(
-                        "O serviço de análise energética está temporariamente indisponível"
-                ));
+                .andExpect(jsonPath("$.status").value(503))
+                .andExpect(jsonPath("$.codigo").value(
+                        "SERVICO_INFERENCIA_INDISPONIVEL"))
+                .andExpect(jsonPath("$.caminho").value("/analise-energetica"));
+    }
+
+    @Test
+    void deveRetornarInternalServerErrorParaFalhaInesperada() throws Exception {
+        when(useCase.executar(any())).thenThrow(
+                new RuntimeException("Falha inesperada"));
+
+        mockMvc.perform(post("/analise-energetica")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestValido()))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.status").value(500))
+                .andExpect(jsonPath("$.codigo").value("ERRO_INTERNO"))
+                .andExpect(jsonPath("$.caminho").value("/analise-energetica"));
     }
 
     private String requestValido() {
         return """
                 {
-                  "consumoKwh": 305,
-                  "usoHorarioPico": false,
-                  "quantidadeEquipamentos": 13,
-                  "tipoImovel": "Casa",
-                  "horasAltoConsumo": 2
+                  "consumo_kwh": 305,
+                  "uso_horario_pico": false,
+                  "quantidade_equipamentos": 13,
+                  "tipo_imovel": "Casa",
+                  "horas_alto_consumo": 2
                 }
                 """;
     }
@@ -140,16 +197,8 @@ class AnaliseEnergeticaControllerTest {
         return new AnaliseEnergeticaResponse(
                 "Moderado",
                 new BigDecimal("0.78"),
-                List.of(new AnaliseEnergeticaResponse.Recomendacao(
-                        "uso_horario_pico",
-                        "Reduzir o uso de equipamentos no horário de pico."
-                )),
-                new AnaliseEnergeticaResponse.EstimativaFinanceira(
-                        new BigDecimal("305"),
-                        new BigDecimal("0.75"),
-                        new BigDecimal("228.75")
-                ),
-                "random-forest-v1"
-        );
+                List.of(
+                        "Reduzir o uso de equipamentos no horário de pico."),
+                new BigDecimal("228.75"));
     }
 }

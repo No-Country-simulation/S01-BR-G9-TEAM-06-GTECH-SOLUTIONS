@@ -2,6 +2,8 @@ package br.com.gtechsolutions.intelliwatts.modules.analise.api.dto;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -10,27 +12,14 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
 public record AnaliseEnergeticaRequest(
-        @NotNull(message = "consumoKwh é obrigatório")
-        @DecimalMin(value = "0.0", inclusive = false, message = "consumoKwh deve ser maior que zero")
-        BigDecimal consumoKwh,
+        @JsonProperty("consumo_kwh") @NotNull(message = "consumo_kwh é obrigatório") @DecimalMin(value = "0.0", inclusive = false, message = "consumo_kwh deve ser maior que zero") BigDecimal consumoKwh,
 
-        @NotNull(message = "usoHorarioPico é obrigatório")
-        Boolean usoHorarioPico,
+        @JsonProperty("uso_horario_pico") @NotNull(message = "uso_horario_pico é obrigatório") Boolean usoHorarioPico,
 
-        @NotNull(message = "quantidadeEquipamentos é obrigatória")
-        @Min(value = 0, message = "quantidadeEquipamentos não pode ser negativa")
-        Integer quantidadeEquipamentos,
+        @JsonProperty("quantidade_equipamentos") @NotNull(message = "quantidade_equipamentos é obrigatória") @Min(value = 1, message = "quantidade_equipamentos deve ser no mínimo 1") Integer quantidadeEquipamentos,
 
-        @NotBlank(message = "tipoImovel é obrigatório")
-        @Pattern(
-                regexp = "Casa|Apartamento|Comércio",
-                message = "tipoImovel deve ser Casa, Apartamento ou Comércio"
-        )
-        String tipoImovel,
+        @JsonProperty("tipo_imovel") @NotBlank(message = "tipo_imovel é obrigatório") @Pattern(regexp = "Casa|Apartamento|Comércio", message = "tipo_imovel deve ser Casa, Apartamento ou Comércio") String tipoImovel,
 
-        @NotNull(message = "horasAltoConsumo é obrigatório")
-        @Min(value = 0, message = "horasAltoConsumo deve ser no mínimo zero")
-        @Max(value = 24, message = "horasAltoConsumo deve ser no máximo 24")
-        Integer horasAltoConsumo
+        @JsonProperty("horas_alto_consumo") @NotNull(message = "horas_alto_consumo é obrigatório") @Min(value = 1, message = "horas_alto_consumo deve ser no mínimo 1") @Max(value = 24, message = "horas_alto_consumo deve ser no máximo 24") Integer horasAltoConsumo
 ) {
 }

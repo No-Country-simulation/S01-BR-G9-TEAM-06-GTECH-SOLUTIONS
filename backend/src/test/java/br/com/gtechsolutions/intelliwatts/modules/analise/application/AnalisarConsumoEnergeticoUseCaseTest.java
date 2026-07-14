@@ -9,6 +9,13 @@ import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import br.com.gtechsolutions.intelliwatts.core.config.AnaliseProperties;
 import br.com.gtechsolutions.intelliwatts.core.exceptions.ServicoInferenciaIndisponivelException;
 import br.com.gtechsolutions.intelliwatts.integrations.datascience.DataScienceClient;
@@ -17,12 +24,6 @@ import br.com.gtechsolutions.intelliwatts.integrations.datascience.dto.DataScien
 import br.com.gtechsolutions.intelliwatts.integrations.datascience.dto.DataScienceAnaliseResponse;
 import br.com.gtechsolutions.intelliwatts.modules.analise.api.dto.AnaliseEnergeticaRequest;
 import br.com.gtechsolutions.intelliwatts.modules.analise.api.dto.AnaliseEnergeticaResponse;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class AnalisarConsumoEnergeticoUseCaseTest {
@@ -37,36 +38,57 @@ class AnalisarConsumoEnergeticoUseCaseTest {
         useCase = new AnalisarConsumoEnergeticoUseCase(
                 new AnaliseProperties(new BigDecimal("0.75")),
                 dataScienceClient,
-                new DataScienceMapper()
-        );
+                new DataScienceMapper());
     }
 
     @Test
-    void deveAcrescentarTarifaETraduzirRespostaDoDataScience() {
+    void deveEnviarIndicadoresECalcularCustoMensal() {
         AnaliseEnergeticaRequest request = requestValido();
-        when(dataScienceClient.analisar(any())).thenReturn(responseValido("0.75"));
+        when(dataScienceClient.analisar(any())).thenReturn(responseValido());
 
         AnaliseEnergeticaResponse response = useCase.executar(request);
 
         ArgumentCaptor<DataScienceAnaliseRequest> captor = ArgumentCaptor.forClass(
-                DataScienceAnaliseRequest.class
-        );
+                DataScienceAnaliseRequest.class);
         verify(dataScienceClient).analisar(captor.capture());
 
-        assertThat(captor.getValue().tarifaReferencia()).isEqualByComparingTo("0.75");
         assertThat(captor.getValue().consumoKwh()).isEqualByComparingTo("305");
+        assertThat(captor.getValue().usoHorarioPico()).isFalse();
+        assertThat(captor.getValue().quantidadeEquipamentos()).isEqualTo(13);
+        assertThat(captor.getValue().tipoImovel()).isEqualTo("Casa");
+        assertThat(captor.getValue().horasAltoConsumo()).isEqualTo(2);
+
         assertThat(response.categoria()).isEqualTo("Moderado");
-        assertThat(response.estimativaFinanceira().custoEstimado()).isEqualByComparingTo("228.75");
-        assertThat(response.modeloVersao()).isEqualTo("random-forest-v1");
+        assertThat(response.probabilidade()).isEqualByComparingTo("0.78");
+        assertThat(response.recomendacoes()).containsExactly(
+                "Reduzir o uso de equipamentos no horário de pico.");
+        assertThat(response.custoEstimadoMensal()).isEqualByComparingTo("228.75");
     }
 
     @Test
-    void deveRejeitarTarifaDiferenteDaEnviada() {
-        when(dataScienceClient.analisar(any())).thenReturn(responseValido("0.80"));
+    void deveArredondarCustoMensalParaDuasCasas() {
+        AnaliseEnergeticaRequest request = new AnaliseEnergeticaRequest(
+                new BigDecimal("10.01"),
+                false,
+                1,
+                "Casa",
+                1);
+        when(dataScienceClient.analisar(any())).thenReturn(responseValido());
+
+        AnaliseEnergeticaResponse response = useCase.executar(request);
+
+        assertThat(response.custoEstimadoMensal()).isEqualByComparingTo("7.51");
+    }
+
+    @Test
+    void devePropagarIndisponibilidadeDoDataScience() {
+        when(dataScienceClient.analisar(any())).thenThrow(
+                new ServicoInferenciaIndisponivelException(
+                        "Serviço de inferência indisponível"));
 
         assertThatThrownBy(() -> useCase.executar(requestValido()))
                 .isInstanceOf(ServicoInferenciaIndisponivelException.class)
-                .hasMessageContaining("incompatíveis");
+                .hasMessageContaining("indisponível");
     }
 
     private AnaliseEnergeticaRequest requestValido() {
@@ -75,24 +97,14 @@ class AnalisarConsumoEnergeticoUseCaseTest {
                 false,
                 13,
                 "Casa",
-                2
-        );
+                2);
     }
 
-    private DataScienceAnaliseResponse responseValido(String tarifaReferencia) {
+    private DataScienceAnaliseResponse responseValido() {
         return new DataScienceAnaliseResponse(
                 "Moderado",
                 new BigDecimal("0.78"),
-                List.of(new DataScienceAnaliseResponse.Recomendacao(
-                        "uso_horario_pico",
-                        "Reduzir o uso de equipamentos no horário de pico."
-                )),
-                new DataScienceAnaliseResponse.EstimativaFinanceira(
-                        new BigDecimal("305"),
-                        new BigDecimal(tarifaReferencia),
-                        new BigDecimal("228.75")
-                ),
-                "random-forest-v1"
-        );
+                List.of(
+                        "Reduzir o uso de equipamentos no horário de pico."));
     }
 }

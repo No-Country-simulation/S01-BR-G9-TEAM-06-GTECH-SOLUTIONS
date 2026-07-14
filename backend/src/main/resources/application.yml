@@ -2,6 +2,13 @@ spring:
   application:
     name: intelliwatts-backend
 
+  jackson:
+    mapper:
+      allow-coercion-of-scalars: false
+    deserialization:
+      accept-float-as-int: false
+      fail-on-unknown-properties: true
+
 server:
   port: ${SERVER_PORT:8080}
 

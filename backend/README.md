@@ -1,27 +1,67 @@
 # IntelliWatts Backend
 
-API REST responsável por validar indicadores de consumo energético e orquestrar a análise realizada pelo serviço Python de Data Science.
+API REST responsável por validar dados de consumo energético, integrar o sistema com o serviço Python de Data Science e calcular o custo mensal estimado.
 
-## Escopo do MVP
+## Estado atual
 
-O fluxo atual é stateless:
+O Backend Java já possui:
+
+- endpoint público do MVP;
+- validação dos dados recebidos;
+- integração preparada para o serviço Python;
+- cálculo financeiro no Backend;
+- tratamento de erros;
+- testes automatizados.
+
+Ainda estão pendentes para a integração completa:
+
+- disponibilização do endpoint HTTP pelo Data Science;
+- integração real com o modelo treinado;
+- armazenamento e carregamento do modelo pela OCI.
+
+## Fluxo do MVP
 
 ```text
-Cliente → Backend Java → Data Science Python → Backend → JSON
+Cliente
+  ↓
+POST /analise-energetica
+  ↓
+Backend Java valida os dados
+  ↓
+POST /v1/inferencias
+  ↓
+Data Science classifica e gera recomendações
+  ↓
+Backend calcula o custo mensal
+  ↓
+Resposta JSON para o cliente
 ```
 
-- O Java valida a entrada, acrescenta a tarifa de referência e controla o contrato HTTP.
-- O Python classifica o consumo, calcula a probabilidade, gera recomendações e estima o custo.
-- Autenticação, banco de dados, usuários e histórico estão fora do MVP.
-- O modelo treinado será carregado pelo serviço Python a partir do OCI Object Storage.
+### Responsabilidades do Backend
+
+- disponibilizar o endpoint público;
+- validar os dados de entrada;
+- enviar os dados validados ao Data Science;
+- calcular o custo mensal estimado;
+- montar a resposta pública;
+- tratar falhas de validação, integração e execução.
+
+### Responsabilidades do Data Science
+
+- disponibilizar o endpoint interno de inferência;
+- carregar o modelo treinado;
+- classificar o perfil energético;
+- calcular a probabilidade da classificação;
+- gerar recomendações;
+- retornar os resultados ao Backend.
 
 ## Requisitos
 
-- Java 21 ou superior compatível com o Spring Boot 4.1
-- Maven 3.6.3 ou superior
-- Serviço Python disponível, por padrão, em `http://localhost:8000`
+- Java 21;
+- Maven 3.6.3 ou superior;
+- serviço Python disponível, por padrão, em `http://localhost:8000`.
 
-## Executar
+## Executar o Backend
 
 Na raiz do monorepo:
 
@@ -29,9 +69,13 @@ Na raiz do monorepo:
 mvn -f backend/pom.xml spring-boot:run
 ```
 
-A API ficará disponível em `http://localhost:8080`.
+Por padrão, a API ficará disponível em:
 
-## Testar
+```text
+http://localhost:8080
+```
+
+## Executar os testes
 
 ```powershell
 mvn -f backend/pom.xml test
@@ -39,10 +83,10 @@ mvn -f backend/pom.xml test
 
 ## Variáveis de ambiente
 
-| Variável | Padrão | Finalidade |
-|---|---|---|
-| `SERVER_PORT` | `8080` | Porta do backend |
-| `TARIFA_REFERENCIA` | `0.75` | Tarifa em R$/kWh enviada ao Python |
+| Variável | Valor padrão | Finalidade |
+|---|---:|---|
+| `SERVER_PORT` | `8080` | Porta do Backend |
+| `TARIFA_REFERENCIA` | `0.75` | Tarifa em R$/kWh usada pelo Backend |
 | `DATASCIENCE_BASE_URL` | `http://localhost:8000` | Endereço do serviço Python |
 | `DATASCIENCE_CAMINHO_INFERENCIA` | `/v1/inferencias` | Rota interna de inferência |
 | `DATASCIENCE_TEMPO_CONEXAO` | `300ms` | Limite para estabelecer conexão |
@@ -50,52 +94,14 @@ mvn -f backend/pom.xml test
 
 ## API pública
 
+### Analisar consumo energético
+
 ```http
-POST /api/v1/analises-energeticas
+POST /analise-energetica
 Content-Type: application/json
 ```
 
-```json
-{
-  "consumoKwh": 305,
-  "usoHorarioPico": false,
-  "quantidadeEquipamentos": 13,
-  "tipoImovel": "Comércio",
-  "horasAltoConsumo": 2
-}
-```
-
-Resposta `200 OK`:
-
-```json
-{
-  "categoria": "Moderado",
-  "probabilidade": 0.78,
-  "recomendacoes": [
-    {
-      "causa": "uso_horario_pico",
-      "descricao": "Reduzir o uso de equipamentos no horário de pico."
-    }
-  ],
-  "estimativaFinanceira": {
-    "consumoKwh": 305,
-    "tarifaReferencia": 0.75,
-    "custoEstimado": 228.75
-  },
-  "modeloVersao": "random-forest-v1"
-}
-```
-
-## Contrato interno com Data Science
-
-O contrato formal e compartilhável está em [`docs/contratos/datascience-api-v1.yaml`](../docs/contratos/datascience-api-v1.yaml).
-
-O backend chama:
-
-```http
-POST /v1/inferencias
-Content-Type: application/json
-```
+### Entrada
 
 ```json
 {
@@ -103,20 +109,123 @@ Content-Type: application/json
   "uso_horario_pico": false,
   "quantidade_equipamentos": 13,
   "tipo_imovel": "Comércio",
-  "horas_alto_consumo": 2,
-  "tarifa_referencia": 0.75
+  "horas_alto_consumo": 2
 }
 ```
 
-O serviço Python deve retornar `categoria`, `probabilidade`, `recomendacoes`, `estimativa_financeira` e `modelo_versao` conforme o exemplo da API pública, usando `snake_case`.
+### Validações atuais
 
-## Erros públicos
+| Campo | Regra |
+|---|---|
+| `consumo_kwh` | Número maior que zero |
+| `uso_horario_pico` | Booleano: `true` ou `false` |
+| `quantidade_equipamentos` | Número inteiro maior ou igual a 1 |
+| `tipo_imovel` | `Casa`, `Apartamento` ou `Comércio` |
+| `horas_alto_consumo` | Número inteiro entre 1 e 24 |
 
-- `400 ENTRADA_INVALIDA`: campos ausentes ou fora dos limites.
-- `400 JSON_INVALIDO`: corpo que não pode ser lido como JSON.
-- `503 SERVICO_INFERENCIA_INDISPONIVEL`: timeout, falha HTTP ou resposta inválida do Python.
-- `500 ERRO_INTERNO`: falha inesperada no backend.
+Os limites mínimos de equipamentos e horas ainda dependem de confirmação da equipe.
 
-## Tipos de imóvel
+### Resposta de sucesso
 
-Os valores canônicos de `tipoImovel` são `Casa`, `Apartamento` e `Comércio`. O backend rejeita outros valores e repassa ao Python exatamente o texto validado.
+Status: `200 OK`
+
+```json
+{
+  "categoria": "Moderado",
+  "probabilidade": 0.78,
+  "recomendacoes": [
+    "Reduzir o uso de equipamentos no horário de pico."
+  ],
+  "custo_estimado_mensal": 228.75
+}
+```
+
+## Cálculo financeiro
+
+O custo mensal é calculado exclusivamente pelo Backend:
+
+```text
+custo_estimado_mensal = consumo_kwh × tarifa_referencia
+```
+
+Exemplo:
+
+```text
+305 × 0,75 = R$ 228,75
+```
+
+O resultado é arredondado para duas casas decimais utilizando a regra `HALF_UP`.
+
+## Contrato interno com Data Science
+
+O contrato formal está documentado em:
+
+[`docs/contratos/datascience-api-v1.yaml`](../docs/contratos/datascience-api-v1.yaml)
+
+O Backend chama:
+
+```http
+POST /v1/inferencias
+Content-Type: application/json
+```
+
+### Dados enviados ao Data Science
+
+```json
+{
+  "consumo_kwh": 305,
+  "uso_horario_pico": false,
+  "quantidade_equipamentos": 13,
+  "tipo_imovel": "Comércio",
+  "horas_alto_consumo": 2
+}
+```
+
+### Resposta esperada do Data Science
+
+```json
+{
+  "categoria": "Moderado",
+  "probabilidade": 0.78,
+  "recomendacoes": [
+    "Reduzir o uso de equipamentos no horário de pico."
+  ]
+}
+```
+
+O Data Science não recebe a tarifa e não calcula valores monetários.
+
+## Tratamento de erros
+
+| Status | Código | Situação |
+|---:|---|---|
+| `400` | `ENTRADA_INVALIDA` | Campo ausente ou fora das regras |
+| `400` | `JSON_INVALIDO` | Corpo da requisição não é um JSON válido |
+| `503` | `SERVICO_INFERENCIA_INDISPONIVEL` | Timeout, falha HTTP ou resposta inválida do Python |
+| `500` | `ERRO_INTERNO` | Falha inesperada dentro do Backend |
+
+## OCI
+
+O MVP deverá utilizar pelo menos um serviço da Oracle Cloud Infrastructure.
+
+A estratégia planejada é utilizar o OCI Object Storage para armazenar o modelo treinado. O serviço Python ficará responsável por carregar o modelo para realizar as inferências.
+
+Essa integração ainda está pendente.
+
+## Fora do escopo do MVP
+
+Não fazem parte desta versão:
+
+- autenticação;
+- banco de dados;
+- histórico de análises;
+- onboarding;
+- dashboard;
+- consulta por `consumoId`;
+- gestão dinâmica de tarifas;
+- variáveis experimentais.
+
+## Documentação
+
+- [Escopo do MVP](../docs/ESCOPO_MVP.md)
+- [Contrato interno com Data Science](../docs/contratos/datascience-api-v1.yaml)

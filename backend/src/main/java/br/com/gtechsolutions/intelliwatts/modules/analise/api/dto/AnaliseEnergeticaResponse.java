@@ -3,24 +3,12 @@ package br.com.gtechsolutions.intelliwatts.modules.analise.api.dto;
 import java.math.BigDecimal;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record AnaliseEnergeticaResponse(
         String categoria,
         BigDecimal probabilidade,
-        List<Recomendacao> recomendacoes,
-        EstimativaFinanceira estimativaFinanceira,
-        String modeloVersao
-) {
+        List<String> recomendacoes,
 
-    public record Recomendacao(
-            String causa,
-            String descricao
-    ) {
-    }
-
-    public record EstimativaFinanceira(
-            BigDecimal consumoKwh,
-            BigDecimal tarifaReferencia,
-            BigDecimal custoEstimado
-    ) {
-    }
+        @JsonProperty("custo_estimado_mensal") BigDecimal custoEstimadoMensal) {
 }

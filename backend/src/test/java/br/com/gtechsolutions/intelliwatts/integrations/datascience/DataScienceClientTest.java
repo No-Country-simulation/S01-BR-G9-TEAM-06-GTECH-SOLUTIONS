@@ -12,19 +12,21 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.time.Duration;
 
-import br.com.gtechsolutions.intelliwatts.core.exceptions.ServicoInferenciaIndisponivelException;
-import br.com.gtechsolutions.intelliwatts.integrations.datascience.dto.DataScienceAnaliseRequest;
-import br.com.gtechsolutions.intelliwatts.integrations.datascience.dto.DataScienceAnaliseResponse;
-import jakarta.validation.Validation;
-import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.json.JsonCompareMode;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
+
+import br.com.gtechsolutions.intelliwatts.core.exceptions.ServicoInferenciaIndisponivelException;
+import br.com.gtechsolutions.intelliwatts.integrations.datascience.dto.DataScienceAnaliseRequest;
+import br.com.gtechsolutions.intelliwatts.integrations.datascience.dto.DataScienceAnaliseResponse;
+import jakarta.validation.Validation;
+import jakarta.validation.ValidatorFactory;
 
 class DataScienceClientTest {
 
@@ -44,14 +46,12 @@ class DataScienceClientTest {
                 URI.create("http://localhost:8000"),
                 "/v1/inferencias",
                 Duration.ofMillis(300),
-                Duration.ofMillis(1500)
-        );
+                Duration.ofMillis(1500));
 
         client = new DataScienceClient(
                 builder.build(),
                 properties,
-                validatorFactory.getValidator()
-        );
+                validatorFactory.getValidator());
     }
 
     @AfterEach
@@ -70,17 +70,19 @@ class DataScienceClientTest {
                           "uso_horario_pico": false,
                           "quantidade_equipamentos": 13,
                           "tipo_imovel": "Comércio",
-                          "horas_alto_consumo": 2,
-                          "tarifa_referencia": 0.75
+                          "horas_alto_consumo": 2
                         }
-                        """))
-                .andRespond(withSuccess(responseValido(), MediaType.APPLICATION_JSON));
+                        """, JsonCompareMode.STRICT))
+                .andRespond(withSuccess(
+                        responseValido(),
+                        MediaType.APPLICATION_JSON));
 
         DataScienceAnaliseResponse response = client.analisar(requestValido());
 
         assertThat(response.categoria()).isEqualTo("Moderado");
-        assertThat(response.estimativaFinanceira().custoEstimado()).isEqualByComparingTo("228.75");
-        assertThat(response.modeloVersao()).isEqualTo("random-forest-v1");
+        assertThat(response.probabilidade()).isEqualByComparingTo("0.78");
+        assertThat(response.recomendacoes()).containsExactly(
+                "Reduzir o uso de equipamentos no horário de pico.");
     }
 
     @Test
@@ -88,8 +90,7 @@ class DataScienceClientTest {
         server.expect(requestTo("http://localhost:8000/v1/inferencias"))
                 .andRespond(withSuccess(
                         responseValido().replace("Moderado", "Desconhecido"),
-                        MediaType.APPLICATION_JSON
-                ));
+                        MediaType.APPLICATION_JSON));
 
         assertThatThrownBy(() -> client.analisar(requestValido()))
                 .isInstanceOf(ServicoInferenciaIndisponivelException.class)
@@ -112,9 +113,7 @@ class DataScienceClientTest {
                 false,
                 13,
                 "Comércio",
-                2,
-                new BigDecimal("0.75")
-        );
+                2);
     }
 
     private String responseValido() {
@@ -123,17 +122,8 @@ class DataScienceClientTest {
                   "categoria": "Moderado",
                   "probabilidade": 0.78,
                   "recomendacoes": [
-                    {
-                      "causa": "uso_horario_pico",
-                      "descricao": "Reduzir o uso de equipamentos no horário de pico."
-                    }
-                  ],
-                  "estimativa_financeira": {
-                    "consumo_kwh": 305,
-                    "tarifa_referencia": 0.75,
-                    "custo_estimado": 228.75
-                  },
-                  "modelo_versao": "random-forest-v1"
+                      "Reduzir o uso de equipamentos no horário de pico."
+                  ]
                 }
                 """;
     }

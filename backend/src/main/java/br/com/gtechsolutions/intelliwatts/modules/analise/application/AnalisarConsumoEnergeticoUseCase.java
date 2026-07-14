@@ -1,16 +1,17 @@
 package br.com.gtechsolutions.intelliwatts.modules.analise.application;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+
+import org.springframework.stereotype.Service;
 
 import br.com.gtechsolutions.intelliwatts.core.config.AnaliseProperties;
-import br.com.gtechsolutions.intelliwatts.core.exceptions.ServicoInferenciaIndisponivelException;
 import br.com.gtechsolutions.intelliwatts.integrations.datascience.DataScienceClient;
 import br.com.gtechsolutions.intelliwatts.integrations.datascience.DataScienceMapper;
 import br.com.gtechsolutions.intelliwatts.integrations.datascience.dto.DataScienceAnaliseRequest;
 import br.com.gtechsolutions.intelliwatts.integrations.datascience.dto.DataScienceAnaliseResponse;
 import br.com.gtechsolutions.intelliwatts.modules.analise.api.dto.AnaliseEnergeticaRequest;
 import br.com.gtechsolutions.intelliwatts.modules.analise.api.dto.AnaliseEnergeticaResponse;
-import org.springframework.stereotype.Service;
 
 @Service
 public class AnalisarConsumoEnergeticoUseCase {
@@ -22,8 +23,7 @@ public class AnalisarConsumoEnergeticoUseCase {
     public AnalisarConsumoEnergeticoUseCase(
             AnaliseProperties properties,
             DataScienceClient dataScienceClient,
-            DataScienceMapper mapper
-    ) {
+            DataScienceMapper mapper) {
         this.properties = properties;
         this.dataScienceClient = dataScienceClient;
         this.mapper = mapper;
@@ -31,31 +31,22 @@ public class AnalisarConsumoEnergeticoUseCase {
 
     public AnaliseEnergeticaResponse executar(AnaliseEnergeticaRequest request) {
         DataScienceAnaliseRequest dataScienceRequest = mapper.toDataScienceRequest(
-                request,
-                properties.tarifaReferencia()
-        );
+                request);
 
-        DataScienceAnaliseResponse dataScienceResponse = dataScienceClient.analisar(dataScienceRequest);
-        validarConsistencia(dataScienceRequest, dataScienceResponse);
+        DataScienceAnaliseResponse dataScienceResponse = dataScienceClient.analisar(
+                dataScienceRequest);
 
-        return mapper.toApiResponse(dataScienceResponse);
+        BigDecimal custoEstimadoMensal = calcularCustoMensal(
+                request.consumoKwh());
+
+        return mapper.toApiResponse(
+                dataScienceResponse,
+                custoEstimadoMensal);
     }
 
-    private void validarConsistencia(
-            DataScienceAnaliseRequest request,
-            DataScienceAnaliseResponse response
-    ) {
-        DataScienceAnaliseResponse.EstimativaFinanceira estimativa = response.estimativaFinanceira();
-
-        if (diferente(request.consumoKwh(), estimativa.consumoKwh())
-                || diferente(request.tarifaReferencia(), estimativa.tarifaReferencia())) {
-            throw new ServicoInferenciaIndisponivelException(
-                    "O serviço de inferência retornou dados incompatíveis com a requisição"
-            );
-        }
-    }
-
-    private boolean diferente(BigDecimal expected, BigDecimal actual) {
-        return expected.compareTo(actual) != 0;
+    private BigDecimal calcularCustoMensal(BigDecimal consumoKwh) {
+        return consumoKwh
+                .multiply(properties.tarifaReferencia())
+                .setScale(2, RoundingMode.HALF_UP);
     }
 }
