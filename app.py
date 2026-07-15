@@ -29,7 +29,7 @@ def home():
 
     return {
 
-        "mensagem": "EnergiAI API Online"
+        "mensagem": "IntelliWatts API Online"
 
     }
 
