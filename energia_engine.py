@@ -34,12 +34,6 @@ def preparar_dados(dados):
         df["horas_alto_consumo"]
     )
 
-    df["score_energetico"] = (
-        df["consumo_kwh"] * 0.5 +
-        df["quantidade_equipamentos"] * 10 +
-        df["horas_alto_consumo"] * 20 +
-        df["uso_horario_pico"].astype(int) * 50
-    )
 
     return df
 
