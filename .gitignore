@@ -1,0 +1,28 @@
+# Build outputs
+**/target/
+**/build/
+**/dist/
+
+# Dependencies and caches
+**/node_modules/
+**/__pycache__/
+*.py[cod]
+
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+
+# IDE metadata
+.idea/
+.vscode/
+*.iml
+.classpath
+.project
+.settings/
+
+# Operating system and runtime files
+.DS_Store
+Thumbs.db
+*.log
+hs_err_pid*
