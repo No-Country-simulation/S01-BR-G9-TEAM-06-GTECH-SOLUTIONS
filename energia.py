@@ -511,8 +511,6 @@ novo_cliente = pd.DataFrame({
 
     "uso_horario_pico_num":[1],
 
-    "score_energetico":[440]
-
 })
 
 predicao = modelo.predict(novo_cliente)
@@ -553,13 +551,6 @@ def preparar_dados(dados):
     df["uso_horario_pico_num"] = (
         df["uso_horario_pico"]
         .astype(int)
-    )
-
-    df["score_energetico"] = (
-        df["consumo_kwh"] * 0.5 +
-        df["quantidade_equipamentos"] * 10 +
-        df["horas_alto_consumo"] * 20 +
-        df["uso_horario_pico_num"] * 50
     )
 
     return df
