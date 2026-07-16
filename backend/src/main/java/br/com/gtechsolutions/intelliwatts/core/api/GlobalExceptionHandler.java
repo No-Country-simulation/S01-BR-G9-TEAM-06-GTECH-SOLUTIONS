@@ -16,6 +16,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import br.com.gtechsolutions.intelliwatts.core.exceptions.CredenciaisInvalidasException;
+import br.com.gtechsolutions.intelliwatts.core.exceptions.EmailJaCadastradoException;
 import br.com.gtechsolutions.intelliwatts.core.exceptions.ServicoInferenciaIndisponivelException;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -71,6 +73,30 @@ public class GlobalExceptionHandler {
                 HttpStatus.SERVICE_UNAVAILABLE,
                 "SERVICO_INFERENCIA_INDISPONIVEL",
                 "O serviço de análise energética está temporariamente indisponível",
+                request,
+                Map.of());
+    }
+
+    @ExceptionHandler(EmailJaCadastradoException.class)
+    public ResponseEntity<ApiErrorResponse> handleEmailAlreadyRegistered(
+            EmailJaCadastradoException exception,
+            HttpServletRequest request) {
+        return buildResponse(
+                HttpStatus.CONFLICT,
+                "EMAIL_JA_CADASTRADO",
+                exception.getMessage(),
+                request,
+                Map.of());
+    }
+
+    @ExceptionHandler(CredenciaisInvalidasException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidCredentials(
+            CredenciaisInvalidasException exception,
+            HttpServletRequest request) {
+        return buildResponse(
+                HttpStatus.UNAUTHORIZED,
+                "CREDENCIAIS_INVALIDAS",
+                exception.getMessage(),
                 request,
                 Map.of());
     }

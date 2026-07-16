@@ -2,6 +2,7 @@ package br.com.gtechsolutions.intelliwatts;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -12,6 +13,7 @@ import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest
+@Import(PostgresTestConfiguration.class)
 class IntelliWattsApplicationTest {
 
     @Autowired

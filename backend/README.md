@@ -1,6 +1,6 @@
 # IntelliWatts Backend
 
-API REST responsável por validar dados de consumo energético, integrar o sistema com o serviço Python de Data Science e calcular o custo mensal estimado.
+API REST responsável por validar dados de consumo energético, integrar o sistema com o serviço Python de Data Science, calcular o custo mensal estimado e autenticar usuários.
 
 ## Estado atual
 
@@ -11,6 +11,10 @@ O Backend Java já possui:
 - integração preparada para o serviço Python;
 - cálculo financeiro no Backend;
 - tratamento de erros;
+- cadastro e login por sessão;
+- persistência de usuários no PostgreSQL;
+- migrations de banco com Flyway;
+- proteção CSRF nas operações de autenticação;
 - testes automatizados.
 
 Ainda estão pendentes para a integração completa:
@@ -59,13 +63,19 @@ Resposta JSON para o cliente
 
 - Java 21;
 - Maven 3.6.3 ou superior;
+- Docker Desktop ou PostgreSQL 17 disponível localmente;
 - serviço Python disponível, por padrão, em `http://localhost:8000`.
+
+Para executar a suíte de testes, é necessário manter o Docker Desktop ou outro
+engine compatível ativo. O Testcontainers cria bancos PostgreSQL temporários;
+um PostgreSQL local isoladamente não substitui esse requisito.
 
 ## Executar o Backend
 
 Na raiz do monorepo:
 
 ```powershell
+docker compose up -d postgres
 mvn -f backend/pom.xml spring-boot:run
 ```
 
@@ -86,6 +96,13 @@ mvn -f backend/pom.xml test
 | Variável | Valor padrão | Finalidade |
 |---|---:|---|
 | `SERVER_PORT` | `8080` | Porta do Backend |
+| `DB_HOST` | `localhost` | Host do PostgreSQL |
+| `DB_PORT` | `5433` | Porta local publicada para o PostgreSQL do container |
+| `DB_NAME` | `intelliwatts` | Nome do banco de dados |
+| `DB_USER` | `intelliwatts` | Usuário do banco de dados |
+| `DB_PASSWORD` | `intelliwatts_local` | Senha local do banco; deve ser configurada no deploy |
+| `SESSION_TIMEOUT` | `30m` | Tempo máximo de inatividade da sessão |
+| `SESSION_COOKIE_SECURE` | `false` | Use `true` quando o Backend estiver publicado com HTTPS |
 | `TARIFA_REFERENCIA` | `0.75` | Tarifa em R$/kWh usada pelo Backend |
 | `DATASCIENCE_BASE_URL` | `http://localhost:8000` | Endereço do serviço Python |
 | `DATASCIENCE_CAMINHO_INFERENCIA` | `/v1/inferencias` | Rota interna de inferência |
@@ -93,6 +110,101 @@ mvn -f backend/pom.xml test
 | `DATASCIENCE_TEMPO_RESPOSTA` | `1500ms` | Limite para receber a resposta |
 
 ## API pública
+
+### Autenticação e sessão — evolução após o MVP
+
+A autenticação utiliza sessão HTTP. O cliente deve preservar o cookie
+`JSESSIONID` entre as requisições.
+
+No frontend, as chamadas devem usar `credentials: "include"`. A configuração
+atual pressupõe frontend e backend na mesma origem em produção e um proxy de
+desenvolvimento local. CORS direto entre origens diferentes ainda não está
+habilitado; a origem exata será definida junto da criação do frontend.
+
+O cookie utiliza `HttpOnly` e `SameSite=Lax`. As sessões ficam na memória da
+instância atual do Backend: reiniciar a aplicação encerra os logins e múltiplas
+instâncias ainda exigiriam armazenamento compartilhado de sessões.
+
+Antes de enviar `POST /auth/cadastro`, `POST /auth/login` ou
+`POST /auth/logout`, obtenha um token CSRF:
+
+```http
+GET /auth/csrf
+```
+
+Exemplo de resposta:
+
+```json
+{
+  "token": "token-gerado-pelo-servidor",
+  "header_name": "X-CSRF-TOKEN",
+  "parameter_name": "_csrf"
+}
+```
+
+Envie o valor de `token` no cabeçalho indicado por `header_name`, mantendo o
+cookie recebido na mesma sessão.
+
+#### Cadastrar usuário
+
+```http
+POST /auth/cadastro
+Content-Type: application/json
+X-CSRF-TOKEN: token-gerado-pelo-servidor
+```
+
+```json
+{
+  "nome": "Mykael Costa",
+  "email": "mykael@example.com",
+  "senha": "uma-senha-segura-123"
+}
+```
+
+A senha deve ter entre 15 e 64 caracteres. A resposta `201 Created` contém
+somente `id`, `nome` e `email`; a senha e seu hash nunca são retornados.
+
+#### Entrar
+
+```http
+POST /auth/login
+Content-Type: application/json
+X-CSRF-TOKEN: token-gerado-pelo-servidor
+```
+
+```json
+{
+  "email": "mykael@example.com",
+  "senha": "uma-senha-segura-123"
+}
+```
+
+Em caso de sucesso, a resposta `200 OK` contém `id`, `nome` e `email`, e o
+servidor troca o identificador da sessão. Após o login, chame novamente
+`GET /auth/csrf`, pois o token anterior é invalidado.
+
+#### Consultar sessão atual
+
+```http
+GET /auth/me
+Cookie: JSESSIONID=identificador-da-sessao
+```
+
+Retorna `200 OK` com `id`, `nome` e `email`. Sem uma sessão autenticada,
+retorna `401 Unauthorized`.
+
+#### Sair
+
+```http
+POST /auth/logout
+X-CSRF-TOKEN: token-gerado-pelo-servidor
+Cookie: JSESSIONID=identificador-da-sessao
+```
+
+Invalida a sessão e retorna `204 No Content`.
+
+Após o logout, obtenha outro token em `GET /auth/csrf` antes da próxima
+operação `POST`.
 
 ### Analisar consumo energético
 
@@ -201,6 +313,11 @@ O Data Science não recebe a tarifa e não calcula valores monetários.
 |---:|---|---|
 | `400` | `ENTRADA_INVALIDA` | Campo ausente ou fora das regras |
 | `400` | `JSON_INVALIDO` | Corpo da requisição não é um JSON válido |
+| `401` | `CREDENCIAIS_INVALIDAS` | E-mail inexistente, senha incorreta ou usuário inativo |
+| `401` | `NAO_AUTENTICADO` | Rota protegida acessada sem uma sessão válida |
+| `403` | `CSRF_INVALIDO` | Token CSRF ausente, expirado ou incorreto |
+| `403` | `ACESSO_NEGADO` | Usuário autenticado sem permissão para o recurso |
+| `409` | `EMAIL_JA_CADASTRADO` | Já existe um usuário com o e-mail informado |
 | `503` | `SERVICO_INFERENCIA_INDISPONIVEL` | Timeout, falha HTTP ou resposta inválida do Python |
 | `500` | `ERRO_INTERNO` | Falha inesperada dentro do Backend |
 
@@ -224,6 +341,10 @@ Não fazem parte desta versão:
 - consulta por `consumoId`;
 - gestão dinâmica de tarifas;
 - variáveis experimentais.
+
+Autenticação e banco de dados permanecem fora da entrega original do MVP. As
+seções anteriores documentam a evolução iniciada após o fechamento desse
+escopo.
 
 ## Documentação
 
