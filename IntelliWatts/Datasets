@@ -1,0 +1,204 @@
+# IntelliWatts – Documentação dos Datasets
+
+## Visão Geral
+
+Este diretório contém os conjuntos de dados utilizados no desenvolvimento do módulo de Ciência de Dados do projeto **IntelliWatts**, responsável pela classificação do perfil de consumo energético de residências e pequenos estabelecimentos.
+
+Os datasets foram utilizados exclusivamente durante as etapas de exploração, preparação, engenharia de atributos e treinamento do modelo de Machine Learning. Após o treinamento, o modelo gerado (`modelo_energiAI.pkl`) passou a ser utilizado pela API FastAPI para realizar inferências em tempo real.
+
+---
+
+# Arquivos
+
+## consumo_energetico.csv
+
+### Finalidade
+
+Dataset original utilizado como base para o desenvolvimento do projeto.
+
+Este arquivo representa os dados coletados antes da etapa de preparação e contém as variáveis originais utilizadas para iniciar o processo de análise.
+
+### Objetivo
+
+Servir como fonte de dados para:
+
+- limpeza dos registros;
+- tratamento de inconsistências;
+- análise exploratória;
+- criação de novas variáveis;
+- treinamento do modelo.
+
+---
+
+## consumo_energetico_processado.csv
+
+### Finalidade
+
+Versão tratada do dataset original após todo o processo de pré-processamento.
+
+Este arquivo foi utilizado para o treinamento do modelo de Machine Learning.
+
+Além dos dados originais, ele contém atributos derivados (Feature Engineering) criados para melhorar o desempenho do algoritmo.
+
+---
+
+# Engenharia de Atributos
+
+Durante o processamento foram geradas novas variáveis utilizadas pelo modelo.
+
+## consumo_por_equipamento
+
+Representa o consumo médio de energia por equipamento.
+
+Fórmula:
+
+```
+consumo_kwh / quantidade_equipamentos
+```
+
+Objetivo:
+
+Normalizar o consumo considerando a quantidade de equipamentos existentes.
+
+---
+
+## intensidade_consumo
+
+Representa o consumo médio por hora de maior utilização.
+
+Fórmula:
+
+```
+consumo_kwh / horas_alto_consumo
+```
+
+Objetivo:
+
+Identificar consumidores que concentram grande parte do consumo em poucas horas.
+
+---
+
+## equipamentos_por_hora
+
+Representa a densidade de equipamentos utilizados durante o período de maior consumo.
+
+Fórmula:
+
+```
+quantidade_equipamentos / horas_alto_consumo
+```
+
+Objetivo:
+
+Auxiliar na identificação da intensidade de utilização dos equipamentos.
+
+---
+
+## uso_horario_pico_num
+
+Conversão da variável booleana:
+
+```
+True → 1
+False → 0
+```
+
+Objetivo:
+
+Permitir que algoritmos de Machine Learning processem corretamente a informação de horário de pico.
+
+---
+
+# Variáveis utilizadas pelo modelo
+
+O modelo foi treinado utilizando exatamente as seguintes features:
+
+- consumo_kwh
+- uso_horario_pico
+- quantidade_equipamentos
+- tipo_imovel
+- horas_alto_consumo
+- consumo_por_equipamento
+- intensidade_consumo
+- equipamentos_por_hora
+- uso_horario_pico_num
+
+Estas são as únicas variáveis esperadas durante o processo de inferência da API.
+
+---
+
+# Variável removida
+
+Durante o desenvolvimento foi criada experimentalmente a variável:
+
+```
+score_energetico
+```
+
+Ela foi utilizada apenas em testes exploratórios e **não fez parte do treinamento final do modelo**.
+
+Por esse motivo ela foi removida da versão final da API para manter consistência entre o processo de treinamento e a inferência realizada em produção.
+
+---
+
+# Modelo treinado
+
+O modelo final encontra-se no arquivo:
+
+```
+modelo_energiAI.pkl
+```
+
+Ele foi treinado utilizando Scikit-Learn e é carregado pela API FastAPI para realizar classificações em tempo real.
+
+As categorias previstas são:
+
+- Eficiente
+- Moderado
+- Ineficiente
+
+Além da categoria, o modelo retorna:
+
+- probabilidade da previsão;
+- recomendações de otimização energética.
+
+---
+
+# Fluxo de utilização
+
+```
+consumo_energetico.csv
+        │
+        ▼
+Limpeza dos dados
+        │
+        ▼
+Feature Engineering
+        │
+        ▼
+consumo_energetico_processado.csv
+        │
+        ▼
+Treinamento do modelo
+        │
+        ▼
+modelo_energiAI.pkl
+        │
+        ▼
+API FastAPI (IntelliWatts)
+        │
+        ▼
+Integração com Backend Java
+```
+
+---
+
+# Observações
+
+Os datasets possuem finalidade exclusivamente de treinamento e validação do modelo de Ciência de Dados.
+
+A API **não realiza re-treinamento** durante sua execução.
+
+As inferências utilizam exclusivamente o modelo previamente treinado.
+
+A estimativa financeira (conversão do consumo em custo monetário utilizando a tarifa vigente) é responsabilidade do Backend, conforme definido nos requisitos funcionais do projeto.
