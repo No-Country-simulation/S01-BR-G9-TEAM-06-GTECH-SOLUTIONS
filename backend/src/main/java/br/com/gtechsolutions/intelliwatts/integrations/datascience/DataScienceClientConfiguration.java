@@ -13,6 +13,7 @@ public class DataScienceClientConfiguration {
     @Bean
     RestClient dataScienceRestClient(DataScienceProperties properties) {
         HttpClient httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
                 .connectTimeout(properties.tempoConexao())
                 .build();
 
