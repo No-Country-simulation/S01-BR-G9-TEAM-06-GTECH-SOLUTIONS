@@ -9,12 +9,17 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import br.com.gtechsolutions.intelliwatts.core.exceptions.CredenciaisInvalidasException;
 import br.com.gtechsolutions.intelliwatts.core.exceptions.EmailJaCadastradoException;
@@ -101,6 +106,44 @@ public class GlobalExceptionHandler {
                 Map.of());
     }
 
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiErrorResponse> handleMethodNotAllowed(
+            HttpRequestMethodNotSupportedException exception,
+            HttpServletRequest request) {
+        return buildResponse(
+                HttpStatus.METHOD_NOT_ALLOWED,
+                "METODO_NAO_PERMITIDO",
+                "O método HTTP informado não é permitido para este recurso",
+                request,
+                Map.of(),
+                exception.getHeaders());
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ApiErrorResponse> handleUnsupportedMediaType(
+            HttpMediaTypeNotSupportedException exception,
+            HttpServletRequest request) {
+        return buildResponse(
+                HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+                "TIPO_MIDIA_NAO_SUPORTADO",
+                "O tipo de conteúdo informado não é suportado por este recurso",
+                request,
+                Map.of(),
+                exception.getHeaders());
+    }
+
+    @ExceptionHandler({NoHandlerFoundException.class, NoResourceFoundException.class})
+    public ResponseEntity<ApiErrorResponse> handleResourceNotFound(
+            Exception exception,
+            HttpServletRequest request) {
+        return buildResponse(
+                HttpStatus.NOT_FOUND,
+                "RECURSO_NAO_ENCONTRADO",
+                "O recurso solicitado não foi encontrado",
+                request,
+                Map.of());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleUnexpected(
             Exception exception,
@@ -121,6 +164,16 @@ public class GlobalExceptionHandler {
             String mensagem,
             HttpServletRequest request,
             Map<String, String> erros) {
+        return buildResponse(status, codigo, mensagem, request, erros, HttpHeaders.EMPTY);
+    }
+
+    private ResponseEntity<ApiErrorResponse> buildResponse(
+            HttpStatus status,
+            String codigo,
+            String mensagem,
+            HttpServletRequest request,
+            Map<String, String> erros,
+            HttpHeaders headers) {
         ApiErrorResponse response = new ApiErrorResponse(
                 Instant.now(),
                 status.value(),
@@ -129,6 +182,6 @@ public class GlobalExceptionHandler {
                 request.getRequestURI(),
                 erros);
 
-        return ResponseEntity.status(status).body(response);
+        return ResponseEntity.status(status).headers(headers).body(response);
     }
 }

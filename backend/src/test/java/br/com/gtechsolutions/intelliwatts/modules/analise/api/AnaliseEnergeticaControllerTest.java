@@ -3,7 +3,9 @@ package br.com.gtechsolutions.intelliwatts.modules.analise.api;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -12,6 +14,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -179,6 +182,37 @@ class AnaliseEnergeticaControllerTest {
                 .andExpect(jsonPath("$.status").value(500))
                 .andExpect(jsonPath("$.codigo").value("ERRO_INTERNO"))
                 .andExpect(jsonPath("$.caminho").value("/analise-energetica"));
+    }
+
+    @Test
+    void deveRetornarMethodNotAllowedParaMetodoNaoSuportado() throws Exception {
+        mockMvc.perform(get("/analise-energetica"))
+                .andExpect(status().isMethodNotAllowed())
+                .andExpect(header().string(HttpHeaders.ALLOW, "POST"))
+                .andExpect(jsonPath("$.status").value(405))
+                .andExpect(jsonPath("$.codigo").value("METODO_NAO_PERMITIDO"))
+                .andExpect(jsonPath("$.caminho").value("/analise-energetica"));
+    }
+
+    @Test
+    void deveRetornarUnsupportedMediaTypeParaTipoNaoSuportado() throws Exception {
+        mockMvc.perform(post("/analise-energetica")
+                .contentType(MediaType.TEXT_PLAIN)
+                .content(requestValido()))
+                .andExpect(status().isUnsupportedMediaType())
+                .andExpect(header().exists(HttpHeaders.ACCEPT))
+                .andExpect(jsonPath("$.status").value(415))
+                .andExpect(jsonPath("$.codigo").value("TIPO_MIDIA_NAO_SUPORTADO"))
+                .andExpect(jsonPath("$.caminho").value("/analise-energetica"));
+    }
+
+    @Test
+    void deveRetornarNotFoundParaRecursoInexistente() throws Exception {
+        mockMvc.perform(get("/rota-inexistente"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.codigo").value("RECURSO_NAO_ENCONTRADO"))
+                .andExpect(jsonPath("$.caminho").value("/rota-inexistente"));
     }
 
     private String requestValido() {
