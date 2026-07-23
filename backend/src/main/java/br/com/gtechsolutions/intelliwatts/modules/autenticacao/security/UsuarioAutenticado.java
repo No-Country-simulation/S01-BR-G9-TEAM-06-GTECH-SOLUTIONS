@@ -87,6 +87,22 @@ public final class UsuarioAutenticado
     }
 
     @Override
+    public boolean equals(Object outro) {
+        if (this == outro) {
+            return true;
+        }
+        if (!(outro instanceof UsuarioAutenticado usuario)) {
+            return false;
+        }
+        return id.equals(usuario.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
+    @Override
     public void eraseCredentials() {
         senhaHash = null;
     }

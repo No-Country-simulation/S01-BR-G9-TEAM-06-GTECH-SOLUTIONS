@@ -13,6 +13,8 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +22,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.session.ChangeSessionIdAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.CompositeSessionAuthenticationStrategy;
+import org.springframework.security.web.authentication.session.ConcurrentSessionControlAuthenticationStrategy;
+import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.context.DelegatingSecurityContextRepository;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
@@ -29,6 +33,9 @@ import org.springframework.security.web.csrf.CsrfAuthenticationStrategy;
 import org.springframework.security.web.csrf.CsrfException;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
+import org.springframework.security.web.session.ConcurrentSessionFilter;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.security.web.session.SessionInformationExpiredStrategy;
 
 @Configuration(proxyBeanMethods = false)
 public class SecurityConfiguration {
@@ -62,11 +69,41 @@ public class SecurityConfiguration {
     }
 
     @Bean
+    SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
+    }
+
+    @Bean
+    HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
+    }
+
+    @Bean
+    SessionInformationExpiredStrategy sessionInformationExpiredStrategy(
+            SecurityErrorResponseWriter errorWriter) {
+        return event -> errorWriter.escrever(
+                event.getRequest(),
+                event.getResponse(),
+                HttpStatus.UNAUTHORIZED,
+                "SESSAO_EXPIRADA",
+                "Sessão encerrada porque um novo login foi realizado");
+    }
+
+    @Bean
     SessionAuthenticationStrategy sessionAuthenticationStrategy(
-            CsrfTokenRepository csrfTokenRepository) {
+            CsrfTokenRepository csrfTokenRepository,
+            SessionRegistry sessionRegistry) {
+        ConcurrentSessionControlAuthenticationStrategy controleConcorrencia =
+                new ConcurrentSessionControlAuthenticationStrategy(
+                        sessionRegistry);
+        controleConcorrencia.setMaximumSessions(1);
+        controleConcorrencia.setExceptionIfMaximumExceeded(false);
+
         return new CompositeSessionAuthenticationStrategy(List.of(
+                controleConcorrencia,
                 new ChangeSessionIdAuthenticationStrategy(),
-                new CsrfAuthenticationStrategy(csrfTokenRepository)));
+                new CsrfAuthenticationStrategy(csrfTokenRepository),
+                new RegisterSessionAuthenticationStrategy(sessionRegistry)));
     }
 
     @Bean
@@ -74,7 +111,9 @@ public class SecurityConfiguration {
             HttpSecurity http,
             SecurityContextRepository securityContextRepository,
             CsrfTokenRepository csrfTokenRepository,
-            SecurityErrorResponseWriter errorWriter) throws Exception {
+            SecurityErrorResponseWriter errorWriter,
+            SessionRegistry sessionRegistry,
+            SessionInformationExpiredStrategy expiredStrategy) throws Exception {
         http
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(csrfTokenRepository)
@@ -90,6 +129,11 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.GET, "/auth/csrf").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/cadastro", "/auth/login").permitAll()
                         .anyRequest().authenticated())
+                .addFilterAt(
+                        new ConcurrentSessionFilter(
+                                sessionRegistry,
+                                expiredStrategy),
+                        ConcurrentSessionFilter.class)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .logout(logout -> logout

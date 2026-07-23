@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import br.com.gtechsolutions.intelliwatts.PostgresTestConfiguration;
@@ -44,6 +45,9 @@ class AutenticacaoControllerIntegrationTest {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private SessionRegistry sessionRegistry;
 
     @Test
     void deveRejeitarLoginSemCsrf() throws Exception {
@@ -102,6 +106,44 @@ class AutenticacaoControllerIntegrationTest {
         assertThat(me.statusCode()).isEqualTo(200);
         assertThat(jsonMapper.readTree(me.body()).path("id").asString())
                 .isEqualTo(usuario.getId().toString());
+    }
+
+    @Test
+    void deveExpirarSessaoAnteriorQuandoUsuarioEntrarNovamente()
+            throws Exception {
+        salvarUsuario(
+                "Usuário Sessão Única",
+                "sessao.unica@example.com");
+
+        ClienteHttp primeiroCliente = novoClienteComCookies();
+        DadosCsrf primeiroCsrf = obterCsrf(primeiroCliente);
+        assertThat(login(
+                primeiroCliente,
+                primeiroCsrf,
+                "sessao.unica@example.com",
+                SENHA_VALIDA).statusCode()).isEqualTo(200);
+        assertThat(buscarUsuarioAtual(primeiroCliente).statusCode())
+                .isEqualTo(200);
+
+        ClienteHttp segundoCliente = novoClienteComCookies();
+        DadosCsrf segundoCsrf = obterCsrf(segundoCliente);
+        assertThat(login(
+                segundoCliente,
+                segundoCsrf,
+                "sessao.unica@example.com",
+                SENHA_VALIDA).statusCode()).isEqualTo(200);
+        assertThat(buscarUsuarioAtual(segundoCliente).statusCode())
+                .isEqualTo(200);
+
+        HttpResponse<String> sessaoAnterior =
+                buscarUsuarioAtual(primeiroCliente);
+
+        assertThat(sessaoAnterior.statusCode()).isEqualTo(401);
+        assertThat(jsonMapper.readTree(sessaoAnterior.body())
+                .path("codigo")
+                .asString()).isEqualTo("SESSAO_EXPIRADA");
+        assertThat(buscarUsuarioAtual(segundoCliente).statusCode())
+                .isEqualTo(200);
     }
 
     @Test
@@ -192,6 +234,7 @@ class AutenticacaoControllerIntegrationTest {
                 "logout@example.com",
                 SENHA_VALIDA).statusCode()).isEqualTo(200);
         assertThat(buscarUsuarioAtual(cliente).statusCode()).isEqualTo(200);
+        String idSessaoAutenticada = cookieSessao(cliente).getValue();
 
         HttpResponse<String> logoutComTokenAnterior = logout(cliente, csrf);
         assertThat(logoutComTokenAnterior.statusCode()).isEqualTo(403);
@@ -211,6 +254,8 @@ class AutenticacaoControllerIntegrationTest {
         assertThat(jsonMapper.readTree(meAposLogout.body())
                 .path("codigo")
                 .asString()).isEqualTo("NAO_AUTENTICADO");
+        assertThat(sessionRegistry.getSessionInformation(idSessaoAutenticada))
+                .isNull();
     }
 
     private Usuario salvarUsuario(String nome, String email) {

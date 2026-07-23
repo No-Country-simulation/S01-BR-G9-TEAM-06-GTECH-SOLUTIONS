@@ -128,6 +128,10 @@ acima é apenas para permitir testes locais por HTTP. As sessões ficam na memó
 da instância atual do Backend: reiniciar a aplicação encerra os logins e múltiplas
 instâncias ainda exigiriam armazenamento compartilhado de sessões.
 
+Cada usuário pode manter uma sessão autenticada por vez. Um novo login substitui
+a sessão anterior. Quando o cliente antigo tentar utilizá-la novamente, receberá
+`401 Unauthorized` com o código `SESSAO_EXPIRADA`.
+
 Antes de enviar `POST /auth/cadastro`, `POST /auth/login` ou
 `POST /auth/logout`, obtenha um token CSRF:
 
@@ -319,6 +323,7 @@ O Data Science não recebe a tarifa e não calcula valores monetários.
 | `400` | `JSON_INVALIDO` | Corpo da requisição não é um JSON válido |
 | `401` | `CREDENCIAIS_INVALIDAS` | E-mail inexistente, senha incorreta ou usuário inativo |
 | `401` | `NAO_AUTENTICADO` | Rota protegida acessada sem uma sessão válida |
+| `401` | `SESSAO_EXPIRADA` | Sessão anterior substituída por um novo login |
 | `403` | `CSRF_INVALIDO` | Token CSRF ausente, expirado ou incorreto |
 | `403` | `ACESSO_NEGADO` | Usuário autenticado sem permissão para o recurso |
 | `409` | `EMAIL_JA_CADASTRADO` | Já existe um usuário com o e-mail informado |
