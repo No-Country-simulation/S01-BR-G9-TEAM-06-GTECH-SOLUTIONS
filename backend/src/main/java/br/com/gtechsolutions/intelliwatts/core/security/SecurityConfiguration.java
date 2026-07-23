@@ -37,6 +37,8 @@ import org.springframework.security.web.session.ConcurrentSessionFilter;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.session.SessionInformationExpiredStrategy;
 
+import br.com.gtechsolutions.intelliwatts.core.api.ApiErrorResponseWriter;
+
 @Configuration(proxyBeanMethods = false)
 public class SecurityConfiguration {
 
@@ -80,7 +82,7 @@ public class SecurityConfiguration {
 
     @Bean
     SessionInformationExpiredStrategy sessionInformationExpiredStrategy(
-            SecurityErrorResponseWriter errorWriter) {
+            ApiErrorResponseWriter errorWriter) {
         return event -> errorWriter.escrever(
                 event.getRequest(),
                 event.getResponse(),
@@ -111,7 +113,7 @@ public class SecurityConfiguration {
             HttpSecurity http,
             SecurityContextRepository securityContextRepository,
             CsrfTokenRepository csrfTokenRepository,
-            SecurityErrorResponseWriter errorWriter,
+            ApiErrorResponseWriter errorWriter,
             SessionRegistry sessionRegistry,
             SessionInformationExpiredStrategy expiredStrategy) throws Exception {
         http

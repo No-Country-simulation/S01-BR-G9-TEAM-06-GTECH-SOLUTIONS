@@ -168,8 +168,13 @@ A estrutura de erro deverá conter:
 |---|---:|---|
 | Entrada inválida | `400` | `ENTRADA_INVALIDA` |
 | JSON inválido | `400` | `JSON_INVALIDO` |
+| Corpo da requisição acima do limite | `413` | `CORPO_REQUISICAO_MUITO_GRANDE` |
 | Serviço Python indisponível | `503` | `SERVICO_INFERENCIA_INDISPONIVEL` |
 | Erro inesperado no backend | `500` | `ERRO_INTERNO` |
+
+O Backend deverá rejeitar corpos HTTP maiores que o limite configurado antes
+da desserialização. O valor padrão será de `16384` bytes e o máximo
+configurável, de `1048576` bytes.
 
 Os nomes dos campos dentro de `erros` deverão seguir `snake_case`.
 

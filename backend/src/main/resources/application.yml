@@ -33,6 +33,8 @@ server:
         secure: ${SESSION_COOKIE_SECURE:true}
 
 intelliwatts:
+  http:
+    tamanho-maximo-corpo-bytes: ${HTTP_MAX_REQUEST_BODY_BYTES:16384}
   analise:
     tarifa-referencia: ${TARIFA_REFERENCIA:0.75}
   datascience:

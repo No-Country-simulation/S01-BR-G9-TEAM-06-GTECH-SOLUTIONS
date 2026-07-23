@@ -1,4 +1,4 @@
-package br.com.gtechsolutions.intelliwatts.core.security;
+package br.com.gtechsolutions.intelliwatts.core.api;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -9,17 +9,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
-import br.com.gtechsolutions.intelliwatts.core.api.ApiErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import tools.jackson.databind.json.JsonMapper;
 
 @Component
-public class SecurityErrorResponseWriter {
+public class ApiErrorResponseWriter {
 
     private final JsonMapper jsonMapper;
 
-    public SecurityErrorResponseWriter(JsonMapper jsonMapper) {
+    public ApiErrorResponseWriter(JsonMapper jsonMapper) {
         this.jsonMapper = jsonMapper;
     }
 

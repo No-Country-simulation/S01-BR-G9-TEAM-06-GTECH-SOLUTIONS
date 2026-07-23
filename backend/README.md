@@ -104,6 +104,7 @@ mvn -f backend/pom.xml test
 | `DB_PASSWORD` | `intelliwatts_local` | Senha local do banco; deve ser configurada no deploy |
 | `SESSION_TIMEOUT` | `30m` | Tempo máximo de inatividade da sessão |
 | `SESSION_COOKIE_SECURE` | `true` | Use `false` somente no desenvolvimento local por HTTP |
+| `HTTP_MAX_REQUEST_BODY_BYTES` | `16384` | Tamanho máximo aceito para o corpo de uma requisição HTTP; teto configurável de `1048576` |
 | `TARIFA_REFERENCIA` | `0.75` | Tarifa em R$/kWh usada pelo Backend |
 | `DATASCIENCE_BASE_URL` | `http://localhost:8000` | Endereço do serviço Python |
 | `DATASCIENCE_CAMINHO_INFERENCIA` | `/v1/inferencias` | Rota interna de inferência |
@@ -333,8 +334,12 @@ O Data Science não recebe a tarifa e não calcula valores monetários.
 | `403` | `CSRF_INVALIDO` | Token CSRF ausente, expirado ou incorreto |
 | `403` | `ACESSO_NEGADO` | Usuário autenticado sem permissão para o recurso |
 | `409` | `EMAIL_JA_CADASTRADO` | Já existe um usuário com o e-mail informado |
+| `413` | `CORPO_REQUISICAO_MUITO_GRANDE` | Corpo HTTP maior que o limite configurado |
 | `503` | `SERVICO_INFERENCIA_INDISPONIVEL` | Timeout, falha HTTP ou resposta inválida do Python |
 | `500` | `ERRO_INTERNO` | Falha inesperada dentro do Backend |
+
+Por padrão, o Backend interrompe corpos HTTP maiores que `16384` bytes antes
+da desserialização. O limite pode ser ajustado por ambiente.
 
 ## OCI
 
