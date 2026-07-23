@@ -76,6 +76,7 @@ Na raiz do monorepo:
 
 ```powershell
 docker compose up -d postgres
+$env:SESSION_COOKIE_SECURE="false"
 mvn -f backend/pom.xml spring-boot:run
 ```
 
@@ -102,7 +103,7 @@ mvn -f backend/pom.xml test
 | `DB_USER` | `intelliwatts` | Usuário do banco de dados |
 | `DB_PASSWORD` | `intelliwatts_local` | Senha local do banco; deve ser configurada no deploy |
 | `SESSION_TIMEOUT` | `30m` | Tempo máximo de inatividade da sessão |
-| `SESSION_COOKIE_SECURE` | `false` | Use `true` quando o Backend estiver publicado com HTTPS |
+| `SESSION_COOKIE_SECURE` | `true` | Use `false` somente no desenvolvimento local por HTTP |
 | `TARIFA_REFERENCIA` | `0.75` | Tarifa em R$/kWh usada pelo Backend |
 | `DATASCIENCE_BASE_URL` | `http://localhost:8000` | Endereço do serviço Python |
 | `DATASCIENCE_CAMINHO_INFERENCIA` | `/v1/inferencias` | Rota interna de inferência |
@@ -121,8 +122,10 @@ atual pressupõe frontend e backend na mesma origem em produção e um proxy de
 desenvolvimento local. CORS direto entre origens diferentes ainda não está
 habilitado; a origem exata será definida junto da criação do frontend.
 
-O cookie utiliza `HttpOnly` e `SameSite=Lax`. As sessões ficam na memória da
-instância atual do Backend: reiniciar a aplicação encerra os logins e múltiplas
+O cookie utiliza `HttpOnly`, `Secure` e `SameSite=Lax`. Em produção, o Backend
+deve ser publicado com HTTPS. O valor `false` usado no comando de desenvolvimento
+acima é apenas para permitir testes locais por HTTP. As sessões ficam na memória
+da instância atual do Backend: reiniciar a aplicação encerra os logins e múltiplas
 instâncias ainda exigiriam armazenamento compartilhado de sessões.
 
 Antes de enviar `POST /auth/cadastro`, `POST /auth/login` ou

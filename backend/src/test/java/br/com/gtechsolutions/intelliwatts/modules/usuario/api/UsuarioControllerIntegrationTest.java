@@ -23,7 +23,9 @@ import br.com.gtechsolutions.intelliwatts.modules.usuario.persistence.UsuarioRep
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = "server.servlet.session.cookie.secure=false")
 @Import(PostgresTestConfiguration.class)
 class UsuarioControllerIntegrationTest {
 

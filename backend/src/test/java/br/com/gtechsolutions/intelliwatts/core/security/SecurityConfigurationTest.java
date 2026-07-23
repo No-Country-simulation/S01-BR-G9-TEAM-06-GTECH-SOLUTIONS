@@ -30,6 +30,26 @@ class SecurityConfigurationTest {
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
     @Test
+    void deveMarcarCookieDeSessaoComoSecurePorPadrao() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/auth/csrf"))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(
+                request,
+                HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.headers().allValues("Set-Cookie"))
+                .anySatisfy(cookie -> assertThat(cookie)
+                        .contains("JSESSIONID=")
+                        .contains("HttpOnly")
+                        .contains("Secure")
+                        .contains("SameSite=Lax"));
+    }
+
+    @Test
     void deveManterEndpointDoMvpPublicoESemCsrf() throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:" + port + "/analise-energetica"))
