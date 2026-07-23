@@ -161,7 +161,8 @@ X-CSRF-TOKEN: token-gerado-pelo-servidor
 }
 ```
 
-A senha deve ter entre 15 e 64 caracteres. A resposta `201 Created` contém
+A senha deve ter entre 15 e 64 caracteres e, no máximo, 72 bytes em UTF-8.
+A resposta `201 Created` contém
 somente `id`, `nome` e `email`; a senha e seu hash nunca são retornados.
 
 #### Entrar

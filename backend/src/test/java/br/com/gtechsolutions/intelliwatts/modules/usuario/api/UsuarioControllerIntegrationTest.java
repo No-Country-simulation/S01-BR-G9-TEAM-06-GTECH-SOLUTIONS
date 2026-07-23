@@ -8,6 +8,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,8 @@ import tools.jackson.databind.json.JsonMapper;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(PostgresTestConfiguration.class)
 class UsuarioControllerIntegrationTest {
+
+    private static final String EMOJI_QUATRO_BYTES = "\uD83D\uDE00";
 
     @LocalServerPort
     private int port;
@@ -121,6 +124,51 @@ class UsuarioControllerIntegrationTest {
     }
 
     @Test
+    void deveAceitarSenhaComExatamente72BytesEmUtf8() throws Exception {
+        HttpClient httpClient = novoClienteComCookies();
+        DadosCsrf csrf = obterCsrf(httpClient);
+        String senha = EMOJI_QUATRO_BYTES.repeat(18);
+
+        HttpResponse<String> response = cadastrar(
+                httpClient,
+                csrf,
+                jsonCadastro(
+                        "Senha Limite",
+                        "senha.72.bytes@example.com",
+                        senha));
+
+        assertThat(response.statusCode()).isEqualTo(201);
+
+        Usuario usuarioSalvo = usuarioRepository
+                .findByEmail("senha.72.bytes@example.com")
+                .orElseThrow();
+        assertThat(passwordEncoder.matches(senha, usuarioSalvo.getSenhaHash()))
+                .isTrue();
+    }
+
+    @Test
+    void deveRejeitarSenhaAcimaDe72BytesEmUtf8() throws Exception {
+        HttpClient httpClient = novoClienteComCookies();
+        DadosCsrf csrf = obterCsrf(httpClient);
+        String email = "senha.76.bytes@example.com";
+
+        HttpResponse<String> response = cadastrar(
+                httpClient,
+                csrf,
+                jsonCadastro(
+                        "Senha Acima do Limite",
+                        email,
+                        EMOJI_QUATRO_BYTES.repeat(19)));
+
+        assertThat(response.statusCode()).isEqualTo(400);
+        JsonNode body = jsonMapper.readTree(response.body());
+        assertThat(body.path("codigo").asString())
+                .isEqualTo("ENTRADA_INVALIDA");
+        assertThat(body.path("erros").has("senha")).isTrue();
+        assertThat(usuarioRepository.findByEmail(email)).isEmpty();
+    }
+
+    @Test
     void deveRetornarConflictParaEmailJaCadastrado() throws Exception {
         HttpClient httpClient = novoClienteComCookies();
         DadosCsrf csrf = obterCsrf(httpClient);
@@ -191,14 +239,21 @@ class UsuarioControllerIntegrationTest {
                 HttpResponse.BodyHandlers.ofString());
     }
 
-    private String jsonCadastro(String nome, String email) {
-        return """
-                {
-                  "nome": "%s",
-                  "email": "%s",
-                  "senha": "uma-senha-de-teste-123"
-                }
-                """.formatted(nome, email);
+    private String jsonCadastro(String nome, String email) throws Exception {
+        return jsonCadastro(
+                nome,
+                email,
+                "uma-senha-de-teste-123");
+    }
+
+    private String jsonCadastro(
+            String nome,
+            String email,
+            String senha) throws Exception {
+        return jsonMapper.writeValueAsString(Map.of(
+                "nome", nome,
+                "email", email,
+                "senha", senha));
     }
 
     private URI uri(String caminho) {

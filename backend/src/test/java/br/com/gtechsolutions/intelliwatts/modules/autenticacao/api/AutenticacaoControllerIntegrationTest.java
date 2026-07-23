@@ -28,6 +28,7 @@ import tools.jackson.databind.json.JsonMapper;
 @Import(PostgresTestConfiguration.class)
 class AutenticacaoControllerIntegrationTest {
 
+    private static final String EMOJI_QUATRO_BYTES = "\uD83D\uDE00";
     private static final String SENHA_VALIDA = "uma-senha-de-login-123";
 
     @LocalServerPort
@@ -155,6 +156,24 @@ class AutenticacaoControllerIntegrationTest {
         assertThat(body.path("codigo").asString())
                 .isEqualTo("ENTRADA_INVALIDA");
         assertThat(body.path("erros").has("email")).isTrue();
+        assertThat(body.path("erros").has("senha")).isTrue();
+    }
+
+    @Test
+    void deveRejeitarSenhaAcimaDe72BytesEmUtf8NoLogin() throws Exception {
+        ClienteHttp cliente = novoClienteComCookies();
+        DadosCsrf csrf = obterCsrf(cliente);
+
+        HttpResponse<String> response = login(
+                cliente,
+                csrf,
+                "senha-longa@example.com",
+                EMOJI_QUATRO_BYTES.repeat(19));
+
+        assertThat(response.statusCode()).isEqualTo(400);
+        JsonNode body = jsonMapper.readTree(response.body());
+        assertThat(body.path("codigo").asString())
+                .isEqualTo("ENTRADA_INVALIDA");
         assertThat(body.path("erros").has("senha")).isTrue();
     }
 
