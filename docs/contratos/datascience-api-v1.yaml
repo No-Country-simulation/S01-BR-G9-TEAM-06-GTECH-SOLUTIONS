@@ -97,7 +97,10 @@ components:
         consumo_kwh:
           type: number
           exclusiveMinimum: 0
-          description: Consumo energético mensal em kWh
+          maximum: 700
+          description: >-
+            Consumo energético mensal em kWh. Valores abaixo de 80 kWh estão
+            fora da faixa de treinamento atual.
           examples:
             - 305
         uso_horario_pico:
@@ -108,7 +111,10 @@ components:
         quantidade_equipamentos:
           type: integer
           minimum: 1
-          description: Quantidade de equipamentos do imóvel
+          maximum: 17
+          description: >-
+            Quantidade de equipamentos do imóvel. Valores de 1 ou 2 estão fora
+            da faixa de treinamento atual.
           examples:
             - 13
         tipo_imovel:
@@ -124,7 +130,9 @@ components:
           type: integer
           minimum: 1
           maximum: 24
-          description: Quantidade diária de horas de alto consumo
+          description: >-
+            Quantidade diária de horas de alto consumo. Valores entre 12 e 24
+            estão fora da faixa de treinamento atual.
           examples:
             - 2
 

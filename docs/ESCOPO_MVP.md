@@ -104,13 +104,11 @@ Content-Type: application/json
 
 | Campo | Tipo | Obrigatório | Regra provisória |
 |---|---|---:|---|
-| `consumo_kwh` | número decimal | sim | maior que `0` |
+| `consumo_kwh` | número decimal | sim | maior que `0` e menor ou igual a `700` |
 | `uso_horario_pico` | booleano | sim | `true` ou `false` |
-| `quantidade_equipamentos` | número inteiro | sim | maior ou igual a `1` |
+| `quantidade_equipamentos` | número inteiro | sim | entre `1` e `17` |
 | `tipo_imovel` | texto | sim | `Casa`, `Apartamento` ou `Comércio` |
 | `horas_alto_consumo` | número inteiro | sim | entre `1` e `24` |
-
-As regras para valores iguais a zero ainda dependem de decisão conjunta com Ciência de Dados.
 
 O modelo atual foi treinado com:
 
@@ -118,7 +116,12 @@ O modelo atual foi treinado com:
 - 3 a 17 equipamentos;
 - 1 a 11 horas de alto consumo.
 
-Esses limites descrevem os dados de treinamento e não são, por enquanto, regras definitivas da API.
+Para esta versão, `700 kWh` — valor arredondado e também usado no cenário de
+demonstração do módulo de Data Science — e `17 equipamentos` foram adotados
+como limites operacionais temporários. A API ainda aceita consumos abaixo de
+`80 kWh`, imóveis com `1` ou `2` equipamentos e até `24` horas de alto consumo
+por serem regras funcionais do domínio. Essas entradas fora da faixa de
+treinamento deverão ser reavaliadas com Ciência de Dados.
 
 ### 4.3 Resposta de sucesso
 
@@ -292,8 +295,7 @@ O escopo, o README e o contrato Java–Python deverão corresponder ao comportam
 
 | ID | Decisão necessária |
 |---|---|
-| `PEND-01` | Definir como equipamentos e horas iguais a zero serão tratados. |
-| `PEND-02` | Definir o comportamento para valores fora das faixas de treinamento. |
+| `PEND-02` | Reavaliar com Ciência de Dados as entradas fora da faixa de treinamento ainda aceitas pelo domínio: consumo abaixo de 80 kWh, 1 ou 2 equipamentos e de 12 a 24 horas de alto consumo. |
 | `PEND-03` | Esclarecer se a consulta de resultados exige um endpoint `GET`. |
 | `PEND-04` | Aprovar a rota e os timeouts do serviço Python. |
 | `PEND-05` | Definir quem enviará e versionará o modelo no OCI Object Storage. |

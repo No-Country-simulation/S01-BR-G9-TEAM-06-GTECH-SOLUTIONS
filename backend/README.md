@@ -237,13 +237,19 @@ Content-Type: application/json
 
 | Campo | Regra |
 |---|---|
-| `consumo_kwh` | Número maior que zero |
+| `consumo_kwh` | Número maior que zero e menor ou igual a 700 |
 | `uso_horario_pico` | Booleano: `true` ou `false` |
-| `quantidade_equipamentos` | Número inteiro maior ou igual a 1 |
+| `quantidade_equipamentos` | Número inteiro entre 1 e 17 |
 | `tipo_imovel` | `Casa`, `Apartamento` ou `Comércio` |
 | `horas_alto_consumo` | Número inteiro entre 1 e 24 |
 
-Os limites mínimos de equipamentos e horas ainda dependem de confirmação da equipe.
+Os máximos de consumo e equipamentos são limites operacionais temporários,
+definidos a partir da faixa de treinamento e do cenário de `700 kWh`
+presente no módulo de Data Science.
+
+Consumos abaixo de `80 kWh`, imóveis com `1` ou `2` equipamentos e valores
+entre `12` e `24` horas são aceitos pelo domínio, mas estão fora da faixa de
+treinamento atual e ainda precisam ser reavaliados com Ciência de Dados.
 
 ### Resposta de sucesso
 

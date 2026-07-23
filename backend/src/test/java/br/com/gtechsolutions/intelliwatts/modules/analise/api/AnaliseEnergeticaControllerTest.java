@@ -2,6 +2,7 @@ package br.com.gtechsolutions.intelliwatts.modules.analise.api;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -84,6 +85,47 @@ class AnaliseEnergeticaControllerTest {
                 .andExpect(jsonPath("$.codigo").value("ENTRADA_INVALIDA"))
                 .andExpect(jsonPath("$.erros.quantidade_equipamentos").exists())
                 .andExpect(jsonPath("$.erros.horas_alto_consumo").exists());
+    }
+
+    @Test
+    void deveAceitarValoresNosLimitesMaximos() throws Exception {
+        when(useCase.executar(any())).thenReturn(responseValido());
+
+        mockMvc.perform(post("/analise-energetica")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                          "consumo_kwh": 700,
+                          "uso_horario_pico": true,
+                          "quantidade_equipamentos": 17,
+                          "tipo_imovel": "Comércio",
+                          "horas_alto_consumo": 24
+                        }
+                        """))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void deveRejeitarValoresAcimaDosLimitesMaximos() throws Exception {
+        mockMvc.perform(post("/analise-energetica")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                          "consumo_kwh": 700.01,
+                          "uso_horario_pico": true,
+                          "quantidade_equipamentos": 18,
+                          "tipo_imovel": "Comércio",
+                          "horas_alto_consumo": 24
+                        }
+                        """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.codigo").value("ENTRADA_INVALIDA"))
+                .andExpect(jsonPath("$.erros.consumo_kwh").value(
+                        "consumo_kwh deve ser no máximo 700"))
+                .andExpect(jsonPath("$.erros.quantidade_equipamentos").value(
+                        "quantidade_equipamentos deve ser no máximo 17"));
+
+        verifyNoInteractions(useCase);
     }
 
     @Test
