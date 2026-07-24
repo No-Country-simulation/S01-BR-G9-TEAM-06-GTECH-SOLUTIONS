@@ -25,7 +25,10 @@ import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = "server.servlet.session.cookie.secure=false")
+        properties = {
+                "server.servlet.session.cookie.secure=false",
+                "intelliwatts.rate-limit.cadastros-por-janela=100"
+        })
 @Import(PostgresTestConfiguration.class)
 class UsuarioControllerIntegrationTest {
 

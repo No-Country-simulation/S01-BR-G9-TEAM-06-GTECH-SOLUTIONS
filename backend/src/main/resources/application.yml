@@ -35,6 +35,13 @@ server:
 intelliwatts:
   http:
     tamanho-maximo-corpo-bytes: ${HTTP_MAX_REQUEST_BODY_BYTES:16384}
+  rate-limit:
+    janela: ${RATE_LIMIT_JANELA:1m}
+    analises-por-janela: ${RATE_LIMIT_ANALISES_POR_JANELA:30}
+    logins-por-janela: ${RATE_LIMIT_LOGINS_POR_JANELA:10}
+    cadastros-por-janela: ${RATE_LIMIT_CADASTROS_POR_JANELA:5}
+    csrf-por-janela: ${RATE_LIMIT_CSRF_POR_JANELA:60}
+    maximo-chaves: ${RATE_LIMIT_MAXIMO_CHAVES:10000}
   analise:
     tarifa-referencia: ${TARIFA_REFERENCIA:0.75}
   datascience:

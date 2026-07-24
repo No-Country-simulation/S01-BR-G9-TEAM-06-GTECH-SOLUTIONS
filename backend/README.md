@@ -105,6 +105,12 @@ mvn -f backend/pom.xml test
 | `SESSION_TIMEOUT` | `30m` | Tempo máximo de inatividade da sessão |
 | `SESSION_COOKIE_SECURE` | `true` | Use `false` somente no desenvolvimento local por HTTP |
 | `HTTP_MAX_REQUEST_BODY_BYTES` | `16384` | Tamanho máximo aceito para o corpo de uma requisição HTTP; teto configurável de `1048576` |
+| `RATE_LIMIT_JANELA` | `1m` | Duração da janela local de limitação |
+| `RATE_LIMIT_ANALISES_POR_JANELA` | `30` | Análises permitidas por endereço remoto e janela |
+| `RATE_LIMIT_LOGINS_POR_JANELA` | `10` | Logins permitidos por endereço remoto e janela |
+| `RATE_LIMIT_CADASTROS_POR_JANELA` | `5` | Cadastros permitidos por endereço remoto e janela |
+| `RATE_LIMIT_CSRF_POR_JANELA` | `60` | Obtenções de CSRF permitidas por endereço remoto e janela |
+| `RATE_LIMIT_MAXIMO_CHAVES` | `10000` | Teto de chaves mantidas na memória pelo limitador local |
 | `TARIFA_REFERENCIA` | `0.75` | Tarifa em R$/kWh usada pelo Backend |
 | `DATASCIENCE_BASE_URL` | `http://localhost:8000` | Endereço do serviço Python |
 | `DATASCIENCE_CAMINHO_INFERENCIA` | `/v1/inferencias` | Rota interna de inferência |
@@ -336,6 +342,7 @@ O Data Science não recebe a tarifa e não calcula valores monetários.
 | `403` | `ACESSO_NEGADO` | Usuário autenticado sem permissão para o recurso |
 | `409` | `EMAIL_JA_CADASTRADO` | Já existe um usuário com o e-mail informado |
 | `413` | `CORPO_REQUISICAO_MUITO_GRANDE` | Corpo HTTP maior que o limite configurado |
+| `429` | `LIMITE_REQUISICOES_EXCEDIDO` | Limite local de requisições excedido |
 | `503` | `SERVICO_INFERENCIA_INDISPONIVEL` | Timeout, falha HTTP ou resposta inválida do Python |
 | `500` | `ERRO_INTERNO` | Falha inesperada dentro do Backend |
 
@@ -345,6 +352,10 @@ da desserialização. O limite pode ser ajustado por ambiente.
 As respostas do Data Science também são limitadas a `16384` bytes antes da
 desserialização. O contrato aceita de uma a dez recomendações, com no máximo
 `500` bytes em UTF-8 por item.
+
+O limitador local usa o endereço remoto observado pelo Java e mantém memória
+limitada. Em produção, ele deve atuar como segunda camada: o gateway ou proxy
+confiável continua responsável pelo rate limit baseado no IP público real.
 
 ## OCI
 
