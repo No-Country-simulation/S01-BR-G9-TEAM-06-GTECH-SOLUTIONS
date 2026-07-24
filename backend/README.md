@@ -8,7 +8,7 @@ O Backend Java já possui:
 
 - endpoint público do MVP;
 - validação dos dados recebidos;
-- integração preparada para o serviço Python;
+- integração HTTP testada localmente com o FastAPI e o modelo treinado;
 - cálculo financeiro no Backend;
 - tratamento de erros;
 - cadastro e login por sessão;
@@ -17,10 +17,13 @@ O Backend Java já possui:
 - proteção CSRF nas operações de autenticação;
 - testes automatizados.
 
-Ainda estão pendentes para a integração completa:
+A demonstração `Cliente → Java → Python → modelo → Java → JSON` já foi
+executada localmente nos perfis Eficiente, Moderado e Ineficiente.
 
-- disponibilização do endpoint HTTP pelo Data Science;
-- integração real com o modelo treinado;
+Ainda estão pendentes para o ambiente compartilhado:
+
+- consolidação do módulo de Data Science na branch `develop`;
+- validação do `DATASCIENCE_SERVICE_TOKEN` pelo FastAPI;
 - armazenamento e carregamento do modelo pela OCI.
 
 ## Fluxo do MVP
