@@ -18,7 +18,10 @@ import jakarta.servlet.ServletContext;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = "intelliwatts.security.cors.origens-permitidas="
+                + "http://localhost:3000")
 @Import(PostgresTestConfiguration.class)
 class SecurityConfigurationTest {
 
@@ -75,6 +78,97 @@ class SecurityConfigurationTest {
     @Test
     void deveConfigurarExpiracaoPorInatividadeEmTrintaMinutos() {
         assertThat(servletContext.getSessionTimeout()).isEqualTo(30);
+    }
+
+    @Test
+    void deveAceitarPreflightSomenteDaOrigemConfigurada() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(
+                        "http://localhost:" + port + "/auth/login"))
+                .header("Origin", "http://localhost:3000")
+                .header("Access-Control-Request-Method", "POST")
+                .header(
+                        "Access-Control-Request-Headers",
+                        "Content-Type, X-CSRF-TOKEN")
+                .method("OPTIONS", HttpRequest.BodyPublishers.noBody())
+                .build();
+
+        HttpResponse<String> response = httpClient.send(
+                request,
+                HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.headers().firstValue(
+                "Access-Control-Allow-Origin"))
+                .contains("http://localhost:3000");
+        assertThat(response.headers().firstValue(
+                "Access-Control-Allow-Credentials"))
+                .contains("true");
+        assertThat(response.headers().firstValue(
+                "Access-Control-Allow-Methods"))
+                .hasValueSatisfying(value ->
+                        assertThat(value).contains("POST"));
+        assertThat(response.headers().firstValue(
+                "Access-Control-Allow-Headers"))
+                .hasValueSatisfying(value -> assertThat(value)
+                        .containsIgnoringCase("Content-Type")
+                        .containsIgnoringCase("X-CSRF-TOKEN"));
+    }
+
+    @Test
+    void deveRejeitarPreflightDeOrigemDesconhecida() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(
+                        "http://localhost:" + port + "/auth/login"))
+                .header("Origin", "https://origem-maliciosa.example")
+                .header("Access-Control-Request-Method", "POST")
+                .method("OPTIONS", HttpRequest.BodyPublishers.noBody())
+                .build();
+
+        HttpResponse<String> response = httpClient.send(
+                request,
+                HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).isEqualTo(403);
+        assertThat(response.headers().firstValue(
+                "Access-Control-Allow-Origin"))
+                .isEmpty();
+    }
+
+    @Test
+    void deveManterCabecalhosCorsQuandoCsrfForInvalido() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(
+                        "http://localhost:" + port + "/auth/login"))
+                .header("Origin", "http://localhost:3000")
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString("""
+                        {
+                          "email": "pessoa@example.com",
+                          "senha": "senha-invalida"
+                        }
+                        """))
+                .build();
+
+        HttpResponse<String> response = httpClient.send(
+                request,
+                HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).isEqualTo(403);
+        assertThat(response.headers().firstValue(
+                "Access-Control-Allow-Origin"))
+                .contains("http://localhost:3000");
+        assertThat(response.headers().firstValue(
+                "Access-Control-Allow-Credentials"))
+                .contains("true");
+        assertThat(response.headers().firstValue(
+                "Access-Control-Expose-Headers"))
+                .hasValueSatisfying(value ->
+                        assertThat(value).contains("Retry-After"));
+
+        JsonNode body = jsonMapper.readTree(response.body());
+        assertThat(body.path("codigo").asString())
+                .isEqualTo("CSRF_INVALIDO");
     }
 
     @Test

@@ -18,7 +18,11 @@ import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = "intelliwatts.rate-limit.analises-por-janela=1")
+        properties = {
+                "intelliwatts.rate-limit.analises-por-janela=1",
+                "intelliwatts.security.cors.origens-permitidas="
+                        + "http://localhost:3000"
+        })
 @Import(PostgresTestConfiguration.class)
 class RateLimitIntegrationTest {
 
@@ -36,6 +40,16 @@ class RateLimitIntegrationTest {
         assertThat(primeira.statusCode()).isEqualTo(400);
         assertThat(segunda.statusCode()).isEqualTo(429);
         assertThat(segunda.headers().firstValue("Retry-After")).isPresent();
+        assertThat(segunda.headers().firstValue(
+                "Access-Control-Allow-Origin"))
+                .contains("http://localhost:3000");
+        assertThat(segunda.headers().firstValue(
+                "Access-Control-Allow-Credentials"))
+                .contains("true");
+        assertThat(segunda.headers().firstValue(
+                "Access-Control-Expose-Headers"))
+                .hasValueSatisfying(value ->
+                        assertThat(value).contains("Retry-After"));
 
         JsonNode body = jsonMapper.readTree(segunda.body());
         assertThat(body.path("codigo").asString())
@@ -47,6 +61,7 @@ class RateLimitIntegrationTest {
                 .version(HttpClient.Version.HTTP_1_1)
                 .uri(URI.create(
                         "http://localhost:" + port + "/analise-energetica"))
+                .header("Origin", "http://localhost:3000")
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(body))
                 .build();

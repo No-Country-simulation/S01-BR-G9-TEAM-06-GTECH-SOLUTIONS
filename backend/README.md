@@ -104,6 +104,7 @@ mvn -f backend/pom.xml test
 | `DB_PASSWORD` | `intelliwatts_local` | Senha local do banco; deve ser configurada no deploy |
 | `SESSION_TIMEOUT` | `30m` | Tempo máximo de inatividade; deve ficar entre `5m` e `24h` |
 | `SESSION_COOKIE_SECURE` | `true` | Use `false` somente no desenvolvimento local por HTTP |
+| `CORS_ALLOWED_ORIGINS` | vazio | Origens exatas do frontend, separadas por vírgula; HTTP é aceito somente em localhost/loopback |
 | `HTTP_MAX_REQUEST_BODY_BYTES` | `16384` | Tamanho máximo aceito para o corpo de uma requisição HTTP; teto configurável de `1048576` |
 | `RATE_LIMIT_JANELA` | `1m` | Duração da janela local de limitação |
 | `RATE_LIMIT_ANALISES_POR_JANELA` | `30` | Análises permitidas por endereço remoto e janela |
@@ -127,9 +128,26 @@ A autenticação utiliza sessão HTTP. O cliente deve preservar o cookie
 `JSESSIONID` entre as requisições.
 
 No frontend, as chamadas devem usar `credentials: "include"`. A configuração
-atual pressupõe frontend e backend na mesma origem em produção e um proxy de
-desenvolvimento local. CORS direto entre origens diferentes ainda não está
-habilitado; a origem exata será definida junto da criação do frontend.
+recomendada mantém frontend e backend na mesma origem em produção e usa um proxy
+no desenvolvimento local. Nesse cenário, `CORS_ALLOWED_ORIGINS` permanece vazio.
+
+Se o frontend chamar o Backend diretamente a partir de outra origem, configure
+uma lista exata, sem caminhos e separada por vírgulas:
+
+```text
+CORS_ALLOWED_ORIGINS=http://localhost:5173,https://app.intelliwatts.example
+```
+
+Origens remotas exigem HTTPS. Curingas como `*` são rejeitados porque a API usa
+cookie de sessão. CORS é uma regra aplicada pelos navegadores e não substitui
+autenticação, CSRF, rate limit ou proteção no gateway.
+
+Com `SameSite=Lax`, a sessão funciona entre origens que continuam no mesmo
+*site*, como portas diferentes de `localhost` ou subdomínios HTTPS do mesmo
+domínio. Se frontend e Backend forem publicados em domínios sem relação entre
+si, o navegador não enviará o `JSESSIONID` nessas chamadas. Para esta versão,
+prefira um proxy de mesma origem; mudar para `SameSite=None` exige HTTPS e uma
+nova revisão de CSRF e cookies.
 
 O cookie utiliza `HttpOnly`, `Secure` e `SameSite=Lax`. Em produção, o Backend
 deve ser publicado com HTTPS. O valor `false` usado no comando de desenvolvimento

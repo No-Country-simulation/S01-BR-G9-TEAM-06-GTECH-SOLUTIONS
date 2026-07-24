@@ -21,7 +21,11 @@ import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = "intelliwatts.http.tamanho-maximo-corpo-bytes=256")
+        properties = {
+                "intelliwatts.http.tamanho-maximo-corpo-bytes=256",
+                "intelliwatts.security.cors.origens-permitidas="
+                        + "http://localhost:3000"
+        })
 @Import(PostgresTestConfiguration.class)
 class RequestBodyLimitIntegrationTest {
 
@@ -125,6 +129,7 @@ class RequestBodyLimitIntegrationTest {
         return HttpRequest.newBuilder()
                 .version(HttpClient.Version.HTTP_1_1)
                 .uri(URI.create("http://localhost:" + port + caminho))
+                .header("Origin", "http://localhost:3000")
                 .header("Content-Type", contentType);
     }
 
@@ -147,6 +152,12 @@ class RequestBodyLimitIntegrationTest {
         assertThat(response.headers().firstValue("Content-Type"))
                 .hasValueSatisfying(contentType ->
                         assertThat(contentType).startsWith("application/json"));
+        assertThat(response.headers().firstValue(
+                "Access-Control-Allow-Origin"))
+                .contains("http://localhost:3000");
+        assertThat(response.headers().firstValue(
+                "Access-Control-Allow-Credentials"))
+                .contains("true");
 
         JsonNode body = jsonMapper.readTree(response.body());
         assertThat(body.path("status").asInt()).isEqualTo(413);
