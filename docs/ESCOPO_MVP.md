@@ -219,6 +219,10 @@ A integração com OCI deverá:
 - permitir que o serviço Python carregue o modelo;
 - manter credenciais e segredos fora do repositório.
 
+A implementação dessa integração ficou sob responsabilidade da equipe de
+Data Science. O trabalho permanece pendente até o armazenamento e o
+carregamento do modelo serem demonstrados.
+
 ## 7. Fora do escopo
 
 Não fazem parte desta versão do MVP:
@@ -303,7 +307,6 @@ O escopo, o README e o contrato Java–Python deverão corresponder ao comportam
 | `PEND-02` | Reavaliar com Ciência de Dados as entradas fora da faixa de treinamento ainda aceitas pelo domínio: consumo abaixo de 80 kWh, 1 ou 2 equipamentos e de 12 a 24 horas de alto consumo. |
 | `PEND-03` | Esclarecer se a consulta de resultados exige um endpoint `GET`. |
 | `PEND-04` | Aprovar a rota e os timeouts do serviço Python. |
-| `PEND-05` | Definir quem enviará e versionará o modelo no OCI Object Storage. |
 
 ## 11. Aprovação
 
