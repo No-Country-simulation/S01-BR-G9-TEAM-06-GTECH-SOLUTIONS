@@ -110,6 +110,7 @@ mvn -f backend/pom.xml test
 | `DATASCIENCE_CAMINHO_INFERENCIA` | `/v1/inferencias` | Rota interna de inferência |
 | `DATASCIENCE_TEMPO_CONEXAO` | `300ms` | Limite para estabelecer conexão |
 | `DATASCIENCE_TEMPO_RESPOSTA` | `1500ms` | Limite para receber a resposta |
+| `DATASCIENCE_TAMANHO_MAXIMO_RESPOSTA_BYTES` | `16384` | Tamanho máximo da resposta do serviço Python; teto configurável de `1048576` |
 
 ## API pública
 
@@ -340,6 +341,10 @@ O Data Science não recebe a tarifa e não calcula valores monetários.
 
 Por padrão, o Backend interrompe corpos HTTP maiores que `16384` bytes antes
 da desserialização. O limite pode ser ajustado por ambiente.
+
+As respostas do Data Science também são limitadas a `16384` bytes antes da
+desserialização. O contrato aceita de uma a dez recomendações, com no máximo
+`500` bytes em UTF-8 por item.
 
 ## OCI
 

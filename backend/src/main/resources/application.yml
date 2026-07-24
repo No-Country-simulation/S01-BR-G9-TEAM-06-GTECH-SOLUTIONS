@@ -42,3 +42,4 @@ intelliwatts:
     caminho-inferencia: ${DATASCIENCE_CAMINHO_INFERENCIA:/v1/inferencias}
     tempo-conexao: ${DATASCIENCE_TEMPO_CONEXAO:300ms}
     tempo-resposta: ${DATASCIENCE_TEMPO_RESPOSTA:1500ms}
+    tamanho-maximo-resposta-bytes: ${DATASCIENCE_TAMANHO_MAXIMO_RESPOSTA_BYTES:16384}

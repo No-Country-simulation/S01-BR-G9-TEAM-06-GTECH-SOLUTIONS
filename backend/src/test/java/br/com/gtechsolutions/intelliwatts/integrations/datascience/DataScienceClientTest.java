@@ -27,6 +27,7 @@ import br.com.gtechsolutions.intelliwatts.integrations.datascience.dto.DataScien
 import br.com.gtechsolutions.intelliwatts.integrations.datascience.dto.DataScienceAnaliseResponse;
 import jakarta.validation.Validation;
 import jakarta.validation.ValidatorFactory;
+import tools.jackson.databind.json.JsonMapper;
 
 class DataScienceClientTest {
 
@@ -46,12 +47,14 @@ class DataScienceClientTest {
                 URI.create("http://localhost:8000"),
                 "/v1/inferencias",
                 Duration.ofMillis(300),
-                Duration.ofMillis(1500));
+                Duration.ofMillis(1500),
+                16_384);
 
         client = new DataScienceClient(
                 builder.build(),
                 properties,
-                validatorFactory.getValidator());
+                validatorFactory.getValidator(),
+                JsonMapper.builder().build());
     }
 
     @AfterEach
@@ -98,6 +101,84 @@ class DataScienceClientTest {
     }
 
     @Test
+    void deveRejeitarMaisDeDezRecomendacoes() {
+        String recomendacoes = """
+                "Recomendação 1",
+                "Recomendação 2",
+                "Recomendação 3",
+                "Recomendação 4",
+                "Recomendação 5",
+                "Recomendação 6",
+                "Recomendação 7",
+                "Recomendação 8",
+                "Recomendação 9",
+                "Recomendação 10",
+                "Recomendação 11"
+                """;
+
+        server.expect(requestTo("http://localhost:8000/v1/inferencias"))
+                .andRespond(withSuccess(
+                        responseComRecomendacoes(recomendacoes),
+                        MediaType.APPLICATION_JSON));
+
+        assertThatThrownBy(() -> client.analisar(requestValido()))
+                .isInstanceOf(ServicoInferenciaIndisponivelException.class)
+                .hasMessageContaining("resposta inválida");
+    }
+
+    @Test
+    void deveRejeitarRecomendacaoAcimaDeQuinhentosBytesUtf8() {
+        String recomendacao = "á".repeat(251);
+
+        server.expect(requestTo("http://localhost:8000/v1/inferencias"))
+                .andRespond(withSuccess(
+                        responseComRecomendacoes("\"" + recomendacao + "\""),
+                        MediaType.APPLICATION_JSON));
+
+        assertThatThrownBy(() -> client.analisar(requestValido()))
+                .isInstanceOf(ServicoInferenciaIndisponivelException.class)
+                .hasMessageContaining("resposta inválida");
+    }
+
+    @Test
+    void deveRejeitarRespostaMaiorQueDezesseisKibibytes() {
+        String recomendacao = "a".repeat(16_384);
+
+        server.expect(requestTo("http://localhost:8000/v1/inferencias"))
+                .andRespond(withSuccess(
+                        responseComRecomendacoes("\"" + recomendacao + "\""),
+                        MediaType.APPLICATION_JSON));
+
+        assertThatThrownBy(() -> client.analisar(requestValido()))
+                .isInstanceOf(ServicoInferenciaIndisponivelException.class)
+                .hasMessageContaining("resposta excedeu");
+    }
+
+    @Test
+    void deveRejeitarRespostaQueNaoSeDeclaraJson() {
+        server.expect(requestTo("http://localhost:8000/v1/inferencias"))
+                .andRespond(withSuccess(
+                        responseValido(),
+                        MediaType.TEXT_PLAIN));
+
+        assertThatThrownBy(() -> client.analisar(requestValido()))
+                .isInstanceOf(ServicoInferenciaIndisponivelException.class)
+                .hasMessageContaining("tipo de conteúdo inválido");
+    }
+
+    @Test
+    void deveRejeitarJsonMalformado() {
+        server.expect(requestTo("http://localhost:8000/v1/inferencias"))
+                .andRespond(withSuccess(
+                        "{\"categoria\":",
+                        MediaType.APPLICATION_JSON));
+
+        assertThatThrownBy(() -> client.analisar(requestValido()))
+                .isInstanceOf(ServicoInferenciaIndisponivelException.class)
+                .hasMessageContaining("resposta inválida");
+    }
+
+    @Test
     void deveTraduzirStatusDeErroParaFalhaControlada() {
         server.expect(requestTo("http://localhost:8000/v1/inferencias"))
                 .andRespond(withStatus(HttpStatus.SERVICE_UNAVAILABLE));
@@ -126,5 +207,17 @@ class DataScienceClientTest {
                   ]
                 }
                 """;
+    }
+
+    private String responseComRecomendacoes(String recomendacoes) {
+        return """
+                {
+                  "categoria": "Moderado",
+                  "probabilidade": 0.78,
+                  "recomendacoes": [
+                    %s
+                  ]
+                }
+                """.formatted(recomendacoes);
     }
 }

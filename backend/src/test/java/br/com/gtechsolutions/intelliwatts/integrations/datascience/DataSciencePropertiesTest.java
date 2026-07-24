@@ -42,7 +42,8 @@ class DataSciencePropertiesTest {
     void deveRejeitarTimeoutTotalIgualADoisSegundos() {
         DataScienceProperties properties = properties(
                 Duration.ofMillis(500),
-                Duration.ofMillis(1500)
+                Duration.ofMillis(1500),
+                16_384
         );
 
         assertThat(validator.validate(properties))
@@ -50,12 +51,47 @@ class DataSciencePropertiesTest {
                         .equals("tempoTotalValido"));
     }
 
+    @Test
+    void deveRejeitarLimiteDeRespostaMenorQueUmByte() {
+        DataScienceProperties properties = properties(
+                Duration.ofMillis(300),
+                Duration.ofMillis(1500),
+                0
+        );
+
+        assertThat(validator.validate(properties))
+                .anyMatch(violation -> violation.getPropertyPath().toString()
+                        .equals("tamanhoMaximoRespostaBytes"));
+    }
+
+    @Test
+    void deveRejeitarLimiteDeRespostaMaiorQueUmMebibyte() {
+        DataScienceProperties properties = properties(
+                Duration.ofMillis(300),
+                Duration.ofMillis(1500),
+                1_048_577
+        );
+
+        assertThat(validator.validate(properties))
+                .anyMatch(violation -> violation.getPropertyPath().toString()
+                        .equals("tamanhoMaximoRespostaBytes"));
+    }
+
     private DataScienceProperties properties(Duration conexao, Duration resposta) {
+        return properties(conexao, resposta, 16_384);
+    }
+
+    private DataScienceProperties properties(
+            Duration conexao,
+            Duration resposta,
+            int tamanhoMaximoRespostaBytes
+    ) {
         return new DataScienceProperties(
                 URI.create("http://localhost:8000"),
                 "/v1/inferencias",
                 conexao,
-                resposta
+                resposta,
+                tamanhoMaximoRespostaBytes
         );
     }
 }

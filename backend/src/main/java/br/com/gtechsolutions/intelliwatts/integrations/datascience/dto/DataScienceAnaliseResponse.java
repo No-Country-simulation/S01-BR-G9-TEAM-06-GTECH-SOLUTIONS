@@ -3,6 +3,7 @@ package br.com.gtechsolutions.intelliwatts.integrations.datascience.dto;
 import java.math.BigDecimal;
 import java.util.List;
 
+import br.com.gtechsolutions.intelliwatts.core.validation.MaxUtf8Bytes;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
@@ -15,5 +16,7 @@ public record DataScienceAnaliseResponse(
 
         @NotNull @DecimalMin("0.0") @DecimalMax("1.0") BigDecimal probabilidade,
 
-        @NotNull @Size(min = 1) List<@NotBlank String> recomendacoes) {
+        @NotNull
+        @Size(min = 1, max = 10)
+        List<@NotBlank @MaxUtf8Bytes(500) String> recomendacoes) {
 }

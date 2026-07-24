@@ -31,7 +31,8 @@ class DataScienceClientConfigurationTest {
                     URI.create("http://127.0.0.1:" + servidor.getAddress().getPort()),
                     "/v1/inferencias",
                     Duration.ofSeconds(1),
-                    Duration.ofSeconds(1));
+                    Duration.ofSeconds(1),
+                    16_384);
 
             RestClient restClient = new DataScienceClientConfiguration()
                     .dataScienceRestClient(properties);
