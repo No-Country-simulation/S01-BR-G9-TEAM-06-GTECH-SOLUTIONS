@@ -48,7 +48,8 @@ class DataScienceClientTest {
                 "/v1/inferencias",
                 Duration.ofMillis(300),
                 Duration.ofMillis(1500),
-                16_384);
+                16_384,
+                "0123456789abcdef0123456789abcdef");
 
         client = new DataScienceClient(
                 builder.build(),

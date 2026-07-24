@@ -117,6 +117,7 @@ mvn -f backend/pom.xml test
 | `DATASCIENCE_TEMPO_CONEXAO` | `300ms` | Limite para estabelecer conexão |
 | `DATASCIENCE_TEMPO_RESPOSTA` | `1500ms` | Limite para receber a resposta |
 | `DATASCIENCE_TAMANHO_MAXIMO_RESPOSTA_BYTES` | `16384` | Tamanho máximo da resposta do serviço Python; teto configurável de `1048576` |
+| `DATASCIENCE_SERVICE_TOKEN` | token apenas local | Segredo compartilhado enviado como Bearer; obrigatório e diferente do padrão em qualquer destino remoto |
 
 ## API pública
 
@@ -356,6 +357,13 @@ desserialização. O contrato aceita de uma a dez recomendações, com no máxim
 O limitador local usa o endereço remoto observado pelo Java e mantém memória
 limitada. Em produção, ele deve atuar como segunda camada: o gateway ou proxy
 confiável continua responsável pelo rate limit baseado no IP público real.
+
+O Backend envia `Authorization: Bearer <token>` em todas as chamadas ao Data
+Science. O token padrão funciona somente com `localhost` ou loopback. Para
+qualquer destino remoto, `DATASCIENCE_BASE_URL` deve usar HTTPS e
+`DATASCIENCE_SERVICE_TOKEN` deve conter um segredo próprio de 32 a 256
+caracteres ASCII sem espaços. O FastAPI deve validar o mesmo token antes de
+executar o modelo.
 
 ## OCI
 

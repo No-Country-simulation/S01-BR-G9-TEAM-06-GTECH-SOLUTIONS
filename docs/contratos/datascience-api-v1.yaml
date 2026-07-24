@@ -2,7 +2,7 @@ openapi: 3.1.0
 
 info:
   title: IntelliWatts Data Science API
-  version: 0.1.0
+  version: 1.0.0
   description: |
     Contrato interno entre o Backend Java e o serviço Python de Data Science.
 
@@ -13,8 +13,8 @@ info:
     O cálculo financeiro é responsabilidade do Backend e não faz parte deste
     contrato interno.
 
-    Autenticação entre serviços não faz parte do MVP. Qualquer mudança
-    incompatível neste contrato deverá gerar uma nova versão da rota.
+    O Backend autentica cada chamada por meio de um token Bearer compartilhado.
+    Em ambientes remotos, a comunicação deverá usar HTTPS e rede privada.
 
 servers:
   - url: http://localhost:8000
@@ -40,7 +40,8 @@ paths:
         serviço são convertidas pela API pública em
         `503 SERVICO_INFERENCIA_INDISPONIVEL`.
       operationId: analisarConsumoEnergetico
-      security: []
+      security:
+        - serviceBearer: []
       x-timeout-conexao-ms: 300
       x-timeout-resposta-ms: 1500
       requestBody:
@@ -77,12 +78,23 @@ paths:
                       - Revisar equipamentos com alto consumo.
         '400':
           $ref: '#/components/responses/EntradaInvalida'
+        '401':
+          $ref: '#/components/responses/NaoAutorizado'
         '500':
           $ref: '#/components/responses/ErroInferencia'
         '503':
           $ref: '#/components/responses/ModeloIndisponivel'
 
 components:
+  securitySchemes:
+    serviceBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: token interno
+      description: >-
+        Segredo compartilhado entre Backend e Data Science. Deve ser
+        configurado por variável de ambiente e nunca versionado.
+
   schemas:
     InferenciaRequest:
       type: object
@@ -159,10 +171,12 @@ components:
         recomendacoes:
           type: array
           minItems: 1
+          maxItems: 10
           description: Recomendações para melhorar a eficiência energética
           items:
             type: string
             minLength: 1
+            description: Texto limitado pelo Backend a 500 bytes em UTF-8
 
     ErroResponse:
       type: object
@@ -181,6 +195,16 @@ components:
           description: Explicação técnica resumida da falha
 
   responses:
+    NaoAutorizado:
+      description: Token interno ausente ou inválido
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErroResponse'
+          example:
+            erro: NAO_AUTORIZADO
+            mensagem: Credencial interna ausente ou inválida
+
     EntradaInvalida:
       description: JSON ausente, inválido ou com campos fora do contrato
       content:

@@ -17,10 +17,12 @@ class DataScienceClientConfigurationTest {
     @Test
     void deveUsarHttp11SemSolicitarUpgrade() throws Exception {
         AtomicReference<String> upgradeSolicitado = new AtomicReference<>();
+        AtomicReference<String> autorizacao = new AtomicReference<>();
         HttpServer servidor = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
 
         servidor.createContext("/teste", exchange -> {
             upgradeSolicitado.set(exchange.getRequestHeaders().getFirst("Upgrade"));
+            autorizacao.set(exchange.getRequestHeaders().getFirst("Authorization"));
             exchange.sendResponseHeaders(204, -1);
             exchange.close();
         });
@@ -32,7 +34,8 @@ class DataScienceClientConfigurationTest {
                     "/v1/inferencias",
                     Duration.ofSeconds(1),
                     Duration.ofSeconds(1),
-                    16_384);
+                    16_384,
+                    "0123456789abcdef0123456789abcdef");
 
             RestClient restClient = new DataScienceClientConfiguration()
                     .dataScienceRestClient(properties);
@@ -43,6 +46,9 @@ class DataScienceClientConfigurationTest {
                     .toBodilessEntity();
 
             assertThat(upgradeSolicitado.get()).isNull();
+            assertThat(autorizacao.get())
+                    .isEqualTo(
+                            "Bearer 0123456789abcdef0123456789abcdef");
         } finally {
             servidor.stop(0);
         }

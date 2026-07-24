@@ -4,6 +4,7 @@ import java.net.http.HttpClient;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 
@@ -22,6 +23,9 @@ public class DataScienceClientConfiguration {
 
         return RestClient.builder()
                 .baseUrl(properties.baseUrl().toString())
+                .defaultHeader(
+                        HttpHeaders.AUTHORIZATION,
+                        "Bearer " + properties.serviceToken())
                 .requestFactory(requestFactory)
                 .build();
     }

@@ -14,6 +14,9 @@ import org.junit.jupiter.api.Test;
 
 class DataSciencePropertiesTest {
 
+    private static final String TOKEN_TESTE =
+            "0123456789abcdef0123456789abcdef";
+
     private ValidatorFactory validatorFactory;
     private Validator validator;
 
@@ -77,6 +80,51 @@ class DataSciencePropertiesTest {
                         .equals("tamanhoMaximoRespostaBytes"));
     }
 
+    @Test
+    void deveAceitarHttpSomenteNoLoopbackEHttpsForaDele() {
+        assertThat(validator.validate(properties(
+                URI.create("http://localhost:8000"),
+                TOKEN_TESTE))).isEmpty();
+        assertThat(validator.validate(properties(
+                URI.create("http://127.0.0.1:8000"),
+                TOKEN_TESTE))).isEmpty();
+        assertThat(validator.validate(properties(
+                URI.create("https://datascience.internal"),
+                TOKEN_TESTE))).isEmpty();
+    }
+
+    @Test
+    void deveRejeitarHttpForaDoLoopback() {
+        DataScienceProperties properties = properties(
+                URI.create("http://datascience.internal:8000"),
+                TOKEN_TESTE);
+
+        assertThat(validator.validate(properties))
+                .anyMatch(violation -> violation.getPropertyPath().toString()
+                        .equals("baseUrlSegura"));
+    }
+
+    @Test
+    void deveRejeitarTokenCurtoOuComEspaco() {
+        assertThat(validator.validate(properties(
+                URI.create("http://localhost:8000"),
+                "token-curto"))).isNotEmpty();
+        assertThat(validator.validate(properties(
+                URI.create("http://localhost:8000"),
+                TOKEN_TESTE + " token"))).isNotEmpty();
+    }
+
+    @Test
+    void deveRejeitarTokenLocalPadraoEmDestinoRemoto() {
+        DataScienceProperties properties = properties(
+                URI.create("https://datascience.internal"),
+                DataScienceProperties.TOKEN_LOCAL_PADRAO);
+
+        assertThat(validator.validate(properties))
+                .anyMatch(violation -> violation.getPropertyPath().toString()
+                        .equals("serviceTokenSeguroParaDestino"));
+    }
+
     private DataScienceProperties properties(Duration conexao, Duration resposta) {
         return properties(conexao, resposta, 16_384);
     }
@@ -91,7 +139,22 @@ class DataSciencePropertiesTest {
                 "/v1/inferencias",
                 conexao,
                 resposta,
-                tamanhoMaximoRespostaBytes
+                tamanhoMaximoRespostaBytes,
+                TOKEN_TESTE
+        );
+    }
+
+    private DataScienceProperties properties(
+            URI baseUrl,
+            String serviceToken
+    ) {
+        return new DataScienceProperties(
+                baseUrl,
+                "/v1/inferencias",
+                Duration.ofMillis(300),
+                Duration.ofMillis(1500),
+                16_384,
+                serviceToken
         );
     }
 }
