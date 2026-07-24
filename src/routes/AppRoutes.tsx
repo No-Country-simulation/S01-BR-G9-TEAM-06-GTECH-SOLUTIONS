@@ -7,6 +7,8 @@ import { MainLayout } from "../layouts/MainLayout";
 
 import { NewAnalysis } from "../pages/NewAnalysis/NewAnalysis";
 
+import { History } from "../pages/History/History";
+
 export function AppRoutes() {
   return (
     <BrowserRouter>
@@ -35,6 +37,15 @@ export function AppRoutes() {
             </MainLayout>
   }
 />
+
+                  <Route
+            path="/history"
+            element={
+              <MainLayout>
+                <History />
+              </MainLayout>
+            }
+          />
 
       </Routes>
 

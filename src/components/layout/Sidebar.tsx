@@ -47,13 +47,22 @@ export function Sidebar() {
                 </NavLink>
 
 
-                <button className="w-full flex items-center gap-3 rounded-xl p-3 hover:bg-yellow-100">
+                <NavLink
+                    to="/history"
+                    className={({ isActive }) =>
+                        `flex w-full items-center gap-3 rounded-xl p-3 transition ${
+                        isActive
+                            ? "bg-yellow-100 font-semibold"
+                            : "hover:bg-yellow-100"
+                        }`
+                    }
+                    >
 
                     <ChartColumn size={20} />
 
                     Histórico
 
-                </button>
+                </NavLink>
 
                 <button className="w-full flex items-center gap-3 rounded-xl p-3 hover:bg-yellow-100">
 

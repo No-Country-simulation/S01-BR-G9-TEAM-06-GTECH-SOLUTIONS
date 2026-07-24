@@ -14,6 +14,14 @@ export type DashboardData = {
 type DashboardContextType = {
   dashboardData: DashboardData;
   setDashboardData: React.Dispatch<React.SetStateAction<DashboardData>>;
+  history: HistoryItem[];
+  setHistory: React.Dispatch<React.SetStateAction<HistoryItem[]>>;
+};
+
+type HistoryItem = {
+  data: string;
+  categoria: string;
+  consumo: string;
 };
 
 const DashboardContext = createContext<DashboardContextType | null>(null);
@@ -40,11 +48,21 @@ export function DashboardProvider({
     ],
   });
 
+  const [history, setHistory] = useState<HistoryItem[]>([
+  {
+    data: "20/07/2026",
+    categoria: "Moderado",
+    consumo: "420 kWh",
+  },
+  ]);
+
   return (
     <DashboardContext.Provider
       value={{
         dashboardData,
         setDashboardData,
+        history,
+        setHistory,
       }}
     >
       {children}

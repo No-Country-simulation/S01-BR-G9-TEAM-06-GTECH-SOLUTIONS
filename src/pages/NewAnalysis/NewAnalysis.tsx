@@ -5,6 +5,7 @@ import { LoadingAnalysis } from "../../components/analysis/LoadingAnalysis";
 import { AnalysisResult } from "../../components/analysis/AnalysisResult";
 import { useDashboard } from "../../context/DashboardContext";
 import { simulateAnalysis } from "../../services/analysisSimulator";
+import { analyzeConsumption } from "../../services/analysisService";
 
 
 export function NewAnalysis() {
@@ -18,9 +19,13 @@ export function NewAnalysis() {
     const [horasAltoConsumo, setHorasAltoConsumo] = useState("");
     const [usoHorarioPico, setUsoHorarioPico] = useState(false);
 
-    const { setDashboardData } = useDashboard();
+    const {
+      setDashboardData,
+      history,
+      setHistory,
+    } = useDashboard();
 
-    function handleAnalysis() {
+    async function handleAnalysis() {
   setFinished(false);
   setLoading(true);
 
@@ -34,10 +39,20 @@ export function NewAnalysis() {
     });
 
     setDashboardData(resultado);
+    setHistory([
+  {
+    data: new Date().toLocaleDateString("pt-BR"),
+    categoria: resultado.perfil,
+    consumo: resultado.consumoAtual,
+  },
+  ...history,
+]);
 
     setLoading(false);
     setFinished(true);
   }, 2000);
+    
+  
 }
 
   return (

@@ -62,7 +62,7 @@ export function Dashboard() {
 
       <section className="mt-8">
 
-        <HistoryTable />
+        <HistoryTable limit={5}/>
 
       </section>
       
