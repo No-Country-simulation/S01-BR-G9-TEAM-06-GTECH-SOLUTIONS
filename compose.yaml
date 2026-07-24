@@ -1,21 +1,27 @@
 name: intelliwatts
 
 services:
-  postgres:
-    image: postgres:17-alpine
+  mysql:
+    image: mysql:8.4.10
     environment:
-      POSTGRES_DB: ${DB_NAME:-intelliwatts}
-      POSTGRES_USER: ${DB_USER:-intelliwatts}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-intelliwatts_local}
+      MYSQL_DATABASE: ${DB_NAME:-intelliwatts}
+      MYSQL_USER: ${DB_USER:-intelliwatts}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-intelliwatts_local}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-intelliwatts_root_local}
     ports:
-      - "${DB_PORT:-5433}:5432"
+      - "127.0.0.1:${DB_PORT:-3307}:3306"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mysql_data:/var/lib/mysql
+    command:
+      - --default-time-zone=+00:00
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "--silent"]
       interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 20
+      start_period: 20s
 
 volumes:
-  postgres_data:
+  mysql_data:

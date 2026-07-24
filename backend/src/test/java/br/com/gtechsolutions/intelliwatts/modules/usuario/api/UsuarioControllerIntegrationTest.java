@@ -17,7 +17,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import br.com.gtechsolutions.intelliwatts.PostgresTestConfiguration;
+import br.com.gtechsolutions.intelliwatts.MySqlTestConfiguration;
 import br.com.gtechsolutions.intelliwatts.modules.usuario.domain.Usuario;
 import br.com.gtechsolutions.intelliwatts.modules.usuario.persistence.UsuarioRepository;
 import tools.jackson.databind.JsonNode;
@@ -29,7 +29,7 @@ import tools.jackson.databind.json.JsonMapper;
                 "server.servlet.session.cookie.secure=false",
                 "intelliwatts.rate-limit.cadastros-por-janela=100"
         })
-@Import(PostgresTestConfiguration.class)
+@Import(MySqlTestConfiguration.class)
 class UsuarioControllerIntegrationTest {
 
     private static final String EMOJI_QUATRO_BYTES = "\uD83D\uDE00";

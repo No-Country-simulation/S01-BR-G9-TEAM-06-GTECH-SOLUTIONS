@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import br.com.gtechsolutions.intelliwatts.PostgresTestConfiguration;
+import br.com.gtechsolutions.intelliwatts.MySqlTestConfiguration;
 import br.com.gtechsolutions.intelliwatts.modules.usuario.domain.Usuario;
 import br.com.gtechsolutions.intelliwatts.modules.usuario.persistence.UsuarioRepository;
 import tools.jackson.databind.JsonNode;
@@ -28,7 +28,7 @@ import tools.jackson.databind.json.JsonMapper;
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = "server.servlet.session.cookie.secure=false")
-@Import(PostgresTestConfiguration.class)
+@Import(MySqlTestConfiguration.class)
 class AutenticacaoControllerIntegrationTest {
 
     private static final String EMOJI_QUATRO_BYTES = "\uD83D\uDE00";

@@ -12,7 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 
-import br.com.gtechsolutions.intelliwatts.PostgresTestConfiguration;
+import br.com.gtechsolutions.intelliwatts.MySqlTestConfiguration;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -23,7 +23,7 @@ import tools.jackson.databind.json.JsonMapper;
                 "intelliwatts.security.cors.origens-permitidas="
                         + "http://localhost:3000"
         })
-@Import(PostgresTestConfiguration.class)
+@Import(MySqlTestConfiguration.class)
 class RateLimitIntegrationTest {
 
     @LocalServerPort

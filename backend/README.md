@@ -12,7 +12,7 @@ O Backend Java já possui:
 - cálculo financeiro no Backend;
 - tratamento de erros;
 - cadastro e login por sessão;
-- persistência de usuários no PostgreSQL;
+- persistência de usuários no MySQL;
 - migrations de banco com Flyway;
 - proteção CSRF nas operações de autenticação;
 - testes automatizados.
@@ -63,19 +63,20 @@ Resposta JSON para o cliente
 
 - Java 21;
 - Maven 3.6.3 ou superior;
-- Docker Desktop ou PostgreSQL 17 disponível localmente;
+- Docker Desktop ou MySQL 8.4 disponível localmente;
 - serviço Python disponível, por padrão, em `http://localhost:8000`.
 
 Para executar a suíte de testes, é necessário manter o Docker Desktop ou outro
-engine compatível ativo. O Testcontainers cria bancos PostgreSQL temporários;
-um PostgreSQL local isoladamente não substitui esse requisito.
+engine compatível ativo. O Testcontainers cria bancos MySQL temporários;
+um MySQL local isoladamente não substitui esse requisito.
 
 ## Executar o Backend
 
 Na raiz do monorepo:
 
 ```powershell
-docker compose up -d postgres
+docker compose up -d --wait mysql
+$env:DB_SSL_MODE="DISABLED"
 $env:SESSION_COOKIE_SECURE="false"
 mvn -f backend/pom.xml spring-boot:run
 ```
@@ -97,11 +98,13 @@ mvn -f backend/pom.xml test
 | Variável | Valor padrão | Finalidade |
 |---|---:|---|
 | `SERVER_PORT` | `8080` | Porta do Backend |
-| `DB_HOST` | `localhost` | Host do PostgreSQL |
-| `DB_PORT` | `5433` | Porta local publicada para o PostgreSQL do container |
+| `DB_HOST` | `localhost` | Host do MySQL |
+| `DB_PORT` | `3307` | Porta local publicada para o MySQL do container |
 | `DB_NAME` | `intelliwatts` | Nome do banco de dados |
 | `DB_USER` | `intelliwatts` | Usuário do banco de dados |
 | `DB_PASSWORD` | `intelliwatts_local` | Senha local do banco; deve ser configurada no deploy |
+| `DB_ROOT_PASSWORD` | `intelliwatts_root_local` | Senha local do root usada somente pelo container MySQL |
+| `DB_SSL_MODE` | `VERIFY_IDENTITY` | Valida TLS e a identidade do banco; use `DISABLED` somente no desenvolvimento local |
 | `SESSION_TIMEOUT` | `30m` | Tempo máximo de inatividade; deve ficar entre `5m` e `24h` |
 | `SESSION_COOKIE_SECURE` | `true` | Use `false` somente no desenvolvimento local por HTTP |
 | `CORS_ALLOWED_ORIGINS` | vazio | Origens exatas do frontend, separadas por vírgula; HTTP é aceito somente em localhost/loopback |
@@ -119,6 +122,11 @@ mvn -f backend/pom.xml test
 | `DATASCIENCE_TEMPO_RESPOSTA` | `1500ms` | Limite para receber a resposta |
 | `DATASCIENCE_TAMANHO_MAXIMO_RESPOSTA_BYTES` | `16384` | Tamanho máximo da resposta do serviço Python; teto configurável de `1048576` |
 | `DATASCIENCE_SERVICE_TOKEN` | token apenas local | Segredo compartilhado enviado como Bearer; obrigatório e diferente do padrão em qualquer destino remoto |
+
+O volume do Compose agora se chama `mysql_data`. O Flyway cria o schema no
+MySQL, mas não copia usuários do volume antigo do PostgreSQL. Esse volume antigo
+não é removido automaticamente; qualquer migração de dados deve ser planejada
+separadamente antes de apagá-lo.
 
 ## API pública
 

@@ -3,14 +3,14 @@ package br.com.gtechsolutions.intelliwatts;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
-import org.testcontainers.postgresql.PostgreSQLContainer;
+import org.testcontainers.mysql.MySQLContainer;
 
 @TestConfiguration(proxyBeanMethods = false)
-public class PostgresTestConfiguration {
+public class MySqlTestConfiguration {
 
     @Bean
     @ServiceConnection
-    PostgreSQLContainer postgresContainer() {
-        return new PostgreSQLContainer("postgres:17-alpine");
+    MySQLContainer mysqlContainer() {
+        return new MySQLContainer("mysql:8.4.10");
     }
 }

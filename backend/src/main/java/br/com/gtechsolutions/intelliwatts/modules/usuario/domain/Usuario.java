@@ -5,6 +5,11 @@ import java.time.ZoneOffset;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.TimeZoneStorage;
+import org.hibernate.annotations.TimeZoneStorageType;
+import org.hibernate.type.SqlTypes;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,7 +22,8 @@ import jakarta.persistence.Table;
 public class Usuario {
 
     @Id
-    @Column(nullable = false, updatable = false)
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(nullable = false, updatable = false, length = 36)
     private UUID id;
 
     @Column(nullable = false, length = 120)
@@ -30,15 +36,18 @@ public class Usuario {
     private String senhaHash;
 
     @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(nullable = false, length = 30)
     private PapelUsuario papel;
 
     @Column(nullable = false)
     private boolean ativo;
 
+    @TimeZoneStorage(TimeZoneStorageType.NORMALIZE_UTC)
     @Column(name = "criado_em", nullable = false, updatable = false)
     private OffsetDateTime criadoEm;
 
+    @TimeZoneStorage(TimeZoneStorageType.NORMALIZE_UTC)
     @Column(name = "atualizado_em", nullable = false)
     private OffsetDateTime atualizadoEm;
 

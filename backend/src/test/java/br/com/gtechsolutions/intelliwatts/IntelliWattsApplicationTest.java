@@ -13,7 +13,7 @@ import tools.jackson.databind.MapperFeature;
 import tools.jackson.databind.json.JsonMapper;
 
 @SpringBootTest
-@Import(PostgresTestConfiguration.class)
+@Import(MySqlTestConfiguration.class)
 class IntelliWattsApplicationTest {
 
     @Autowired
