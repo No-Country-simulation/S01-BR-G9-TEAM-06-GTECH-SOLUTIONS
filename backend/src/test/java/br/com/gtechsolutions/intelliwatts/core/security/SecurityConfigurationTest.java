@@ -14,6 +14,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 
 import br.com.gtechsolutions.intelliwatts.PostgresTestConfiguration;
+import jakarta.servlet.ServletContext;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -26,6 +27,9 @@ class SecurityConfigurationTest {
 
     @Autowired
     private JsonMapper jsonMapper;
+
+    @Autowired
+    private ServletContext servletContext;
 
     private final HttpClient httpClient = HttpClient.newHttpClient();
 
@@ -47,6 +51,30 @@ class SecurityConfigurationTest {
                         .contains("HttpOnly")
                         .contains("Secure")
                         .contains("SameSite=Lax"));
+    }
+
+    @Test
+    void deveImpedirCacheDoTokenCsrf() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/auth/csrf"))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = httpClient.send(
+                request,
+                HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.headers().firstValue("Cache-Control"))
+                .hasValueSatisfying(value ->
+                        assertThat(value).contains("no-store"));
+        assertThat(response.headers().firstValue("Pragma"))
+                .contains("no-cache");
+        assertThat(response.headers().firstValue("Expires")).contains("0");
+    }
+
+    @Test
+    void deveConfigurarExpiracaoPorInatividadeEmTrintaMinutos() {
+        assertThat(servletContext.getSessionTimeout()).isEqualTo(30);
     }
 
     @Test

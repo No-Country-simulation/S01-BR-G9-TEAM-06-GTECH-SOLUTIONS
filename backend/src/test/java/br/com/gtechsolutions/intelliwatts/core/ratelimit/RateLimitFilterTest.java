@@ -122,6 +122,8 @@ class RateLimitFilterTest {
         assertThat(resultado.response().getStatus()).isEqualTo(429);
         assertThat(resultado.response().getHeader("Retry-After"))
                 .isEqualTo("60");
+        assertThat(resultado.response().getHeader("Cache-Control"))
+                .contains("no-store");
 
         JsonNode body = jsonMapper.readTree(
                 resultado.response().getContentAsByteArray());

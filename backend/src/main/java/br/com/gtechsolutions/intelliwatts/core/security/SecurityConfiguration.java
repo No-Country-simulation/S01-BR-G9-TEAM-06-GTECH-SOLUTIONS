@@ -6,6 +6,7 @@ import jakarta.servlet.DispatcherType;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -138,6 +139,8 @@ public class SecurityConfiguration {
                         ConcurrentSessionFilter.class)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
+                .headers(headers -> headers
+                        .cacheControl(Customizer.withDefaults()))
                 .logout(logout -> logout
                         .logoutUrl("/auth/logout")
                         .logoutSuccessHandler(

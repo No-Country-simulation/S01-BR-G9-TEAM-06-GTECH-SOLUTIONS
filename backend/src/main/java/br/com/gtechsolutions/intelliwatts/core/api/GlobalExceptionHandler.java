@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
@@ -182,6 +183,9 @@ public class GlobalExceptionHandler {
                 request.getRequestURI(),
                 erros);
 
-        return ResponseEntity.status(status).headers(headers).body(response);
+        return ResponseEntity.status(status)
+                .headers(headers)
+                .cacheControl(CacheControl.noStore())
+                .body(response);
     }
 }

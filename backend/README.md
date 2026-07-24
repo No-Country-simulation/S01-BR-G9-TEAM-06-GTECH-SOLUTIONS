@@ -102,7 +102,7 @@ mvn -f backend/pom.xml test
 | `DB_NAME` | `intelliwatts` | Nome do banco de dados |
 | `DB_USER` | `intelliwatts` | Usuário do banco de dados |
 | `DB_PASSWORD` | `intelliwatts_local` | Senha local do banco; deve ser configurada no deploy |
-| `SESSION_TIMEOUT` | `30m` | Tempo máximo de inatividade da sessão |
+| `SESSION_TIMEOUT` | `30m` | Tempo máximo de inatividade; deve ficar entre `5m` e `24h` |
 | `SESSION_COOKIE_SECURE` | `true` | Use `false` somente no desenvolvimento local por HTTP |
 | `HTTP_MAX_REQUEST_BODY_BYTES` | `16384` | Tamanho máximo aceito para o corpo de uma requisição HTTP; teto configurável de `1048576` |
 | `RATE_LIMIT_JANELA` | `1m` | Duração da janela local de limitação |

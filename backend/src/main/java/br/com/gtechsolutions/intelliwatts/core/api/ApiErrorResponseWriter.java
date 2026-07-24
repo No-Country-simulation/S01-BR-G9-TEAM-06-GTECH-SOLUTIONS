@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
@@ -39,6 +40,9 @@ public class ApiErrorResponseWriter {
         response.setStatus(status.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
+        response.setHeader(HttpHeaders.PRAGMA, "no-cache");
+        response.setDateHeader(HttpHeaders.EXPIRES, 0);
         jsonMapper.writeValue(response.getOutputStream(), body);
     }
 }

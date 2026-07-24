@@ -33,6 +33,9 @@ server:
         secure: ${SESSION_COOKIE_SECURE:true}
 
 intelliwatts:
+  security:
+    session:
+      timeout: ${SESSION_TIMEOUT:30m}
   http:
     tamanho-maximo-corpo-bytes: ${HTTP_MAX_REQUEST_BODY_BYTES:16384}
   rate-limit:
