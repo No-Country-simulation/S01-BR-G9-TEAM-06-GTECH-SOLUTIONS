@@ -75,8 +75,22 @@ public class DataScienceClient {
     private DataScienceAnaliseResponse lerResponseLimitada(
             RestClient.RequestHeadersSpec.ConvertibleClientHttpResponse response
     ) throws IOException {
+        int limite = properties.tamanhoMaximoRespostaBytes();
+        byte[] body = response.getBody().readNBytes(limite + 1);
+
+        if (body.length > limite) {
+            throw new ServicoInferenciaIndisponivelException(
+                    "A resposta excedeu o limite permitido"
+            );
+        }
+
         if (!response.getStatusCode().is2xxSuccessful()) {
-            throw response.createException();
+            LOGGER.warn(
+                    "Serviço de inferência respondeu com status HTTP {}",
+                    response.getStatusCode().value());
+            throw new ServicoInferenciaIndisponivelException(
+                    "Não foi possível obter a análise energética"
+            );
         }
 
         MediaType contentType = response.getHeaders().getContentType();
@@ -84,15 +98,6 @@ public class DataScienceClient {
                 || !MediaType.APPLICATION_JSON.isCompatibleWith(contentType)) {
             throw new ServicoInferenciaIndisponivelException(
                     "O serviço de inferência retornou um tipo de conteúdo inválido"
-            );
-        }
-
-        int limite = properties.tamanhoMaximoRespostaBytes();
-        byte[] body = response.getBody().readNBytes(limite + 1);
-
-        if (body.length > limite) {
-            throw new ServicoInferenciaIndisponivelException(
-                    "A resposta excedeu o limite permitido"
             );
         }
 

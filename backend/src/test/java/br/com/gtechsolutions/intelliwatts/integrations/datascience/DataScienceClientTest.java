@@ -189,6 +189,19 @@ class DataScienceClientTest {
                 .hasMessageContaining("obter a análise");
     }
 
+    @Test
+    void deveLimitarCorpoTambemQuandoDataScienceRetornaErro() {
+        server.expect(requestTo("http://localhost:8000/v1/inferencias"))
+                .andRespond(withStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .contentType(MediaType.TEXT_PLAIN)
+                        .body("conteudo-remoto-sensivel-".repeat(700)));
+
+        assertThatThrownBy(() -> client.analisar(requestValido()))
+                .isInstanceOf(ServicoInferenciaIndisponivelException.class)
+                .hasMessageContaining("resposta excedeu")
+                .hasMessageNotContaining("conteudo-remoto-sensivel");
+    }
+
     private DataScienceAnaliseRequest requestValido() {
         return new DataScienceAnaliseRequest(
                 new BigDecimal("305"),

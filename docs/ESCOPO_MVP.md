@@ -104,7 +104,7 @@ Content-Type: application/json
 
 | Campo | Tipo | Obrigatório | Regra provisória |
 |---|---|---:|---|
-| `consumo_kwh` | número decimal | sim | maior que `0` e menor ou igual a `700` |
+| `consumo_kwh` | número decimal | sim | maior que `0`, menor ou igual a `700` e com no máximo 3 casas decimais |
 | `uso_horario_pico` | booleano | sim | `true` ou `false` |
 | `quantidade_equipamentos` | número inteiro | sim | entre `1` e `17` |
 | `tipo_imovel` | texto | sim | `Casa`, `Apartamento` ou `Comércio` |

@@ -125,6 +125,45 @@ class DataSciencePropertiesTest {
                         .equals("serviceTokenSeguroParaDestino"));
     }
 
+    @Test
+    void deveAceitarCaminhoInternoDaInferencia() {
+        assertThat(validator.validate(properties(
+                URI.create("https://datascience.internal"),
+                "/v1/inferencias",
+                TOKEN_TESTE))).isEmpty();
+    }
+
+    @Test
+    void deveRejeitarUrlOuAutoridadeNoCaminhoDaInferencia() {
+        assertCaminhoInferenciaInvalido(
+                "http://outro-host.example/v1/inferencias");
+        assertCaminhoInferenciaInvalido(
+                "//outro-host.example/v1/inferencias");
+        assertCaminhoInferenciaInvalido(
+                "v1/inferencias");
+    }
+
+    @Test
+    void deveRejeitarQueryFragmentoOuNavegacaoNoCaminhoDaInferencia() {
+        assertCaminhoInferenciaInvalido(
+                "/v1/inferencias?destino=outro-host");
+        assertCaminhoInferenciaInvalido(
+                "/v1/inferencias#fragmento");
+        assertCaminhoInferenciaInvalido(
+                "/v1/../inferencias");
+        assertCaminhoInferenciaInvalido(
+                "/v1/%2F%2Foutro-host");
+    }
+
+    private void assertCaminhoInferenciaInvalido(String caminhoInferencia) {
+        assertThat(validator.validate(properties(
+                URI.create("https://datascience.internal"),
+                caminhoInferencia,
+                TOKEN_TESTE)))
+                .anyMatch(violation -> violation.getPropertyPath().toString()
+                        .equals("caminhoInferencia"));
+    }
+
     private DataScienceProperties properties(Duration conexao, Duration resposta) {
         return properties(conexao, resposta, 16_384);
     }
@@ -148,9 +187,17 @@ class DataSciencePropertiesTest {
             URI baseUrl,
             String serviceToken
     ) {
+        return properties(baseUrl, "/v1/inferencias", serviceToken);
+    }
+
+    private DataScienceProperties properties(
+            URI baseUrl,
+            String caminhoInferencia,
+            String serviceToken
+    ) {
         return new DataScienceProperties(
                 baseUrl,
-                "/v1/inferencias",
+                caminhoInferencia,
                 Duration.ofMillis(300),
                 Duration.ofMillis(1500),
                 16_384,

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -22,6 +23,10 @@ public record AnaliseEnergeticaRequest(
         @DecimalMax(
                 value = "700",
                 message = "consumo_kwh deve ser no máximo 700")
+        @Digits(
+                integer = 3,
+                fraction = 3,
+                message = "consumo_kwh deve ter no máximo 3 casas decimais")
         BigDecimal consumoKwh,
 
         @JsonProperty("uso_horario_pico")

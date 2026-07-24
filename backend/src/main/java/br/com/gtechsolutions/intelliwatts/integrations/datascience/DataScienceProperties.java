@@ -19,7 +19,12 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties(prefix = "intelliwatts.datascience")
 public record DataScienceProperties(
         @NotNull URI baseUrl,
-        @NotBlank String caminhoInferencia,
+        @NotBlank
+        @Pattern(
+                regexp = "^/[A-Za-z0-9][A-Za-z0-9._~-]*(?:/[A-Za-z0-9][A-Za-z0-9._~-]*)*$",
+                message = "deve ser um caminho interno iniciado por uma única barra, sem URL, query ou fragmento"
+        )
+        String caminhoInferencia,
         @NotNull Duration tempoConexao,
         @NotNull Duration tempoResposta,
         @Min(1) @Max(1_048_576) int tamanhoMaximoRespostaBytes,

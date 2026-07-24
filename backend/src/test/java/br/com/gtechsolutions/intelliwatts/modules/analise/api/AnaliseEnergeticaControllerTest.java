@@ -129,6 +129,28 @@ class AnaliseEnergeticaControllerTest {
     }
 
     @Test
+    void deveRejeitarConsumoComEscalaExcessivaAntesDoCasoDeUso()
+            throws Exception {
+        mockMvc.perform(post("/analise-energetica")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                          "consumo_kwh": 1e-1000000000,
+                          "uso_horario_pico": false,
+                          "quantidade_equipamentos": 13,
+                          "tipo_imovel": "Comércio",
+                          "horas_alto_consumo": 2
+                        }
+                        """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.codigo").value("ENTRADA_INVALIDA"))
+                .andExpect(jsonPath("$.erros.consumo_kwh").value(
+                        "consumo_kwh deve ter no máximo 3 casas decimais"));
+
+        verifyNoInteractions(useCase);
+    }
+
+    @Test
     void deveRejeitarQuantidadeEquipamentosComoTexto() throws Exception {
         mockMvc.perform(post("/analise-energetica")
                 .contentType(MediaType.APPLICATION_JSON)

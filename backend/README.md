@@ -275,7 +275,7 @@ Content-Type: application/json
 
 | Campo | Regra |
 |---|---|
-| `consumo_kwh` | Número maior que zero e menor ou igual a 700 |
+| `consumo_kwh` | Número maior que zero, menor ou igual a 700 e com no máximo 3 casas decimais |
 | `uso_horario_pico` | Booleano: `true` ou `false` |
 | `quantidade_equipamentos` | Número inteiro entre 1 e 17 |
 | `tipo_imovel` | `Casa`, `Apartamento` ou `Comércio` |
