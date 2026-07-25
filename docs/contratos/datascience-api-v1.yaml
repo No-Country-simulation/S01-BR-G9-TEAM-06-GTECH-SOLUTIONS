@@ -1,0 +1,237 @@
+openapi: 3.1.0
+
+info:
+  title: IntelliWatts Data Science API
+  version: 1.0.0
+  description: |
+    Contrato interno entre o Backend Java e o serviço Python de Data Science.
+
+    O Backend valida a entrada pública e envia os cinco indicadores de consumo.
+    O serviço Python classifica o perfil energético, calcula a probabilidade e
+    gera recomendações.
+
+    O cálculo financeiro é responsabilidade do Backend e não faz parte deste
+    contrato interno.
+
+    O Backend autentica cada chamada por meio de um token Bearer compartilhado.
+    Em ambientes remotos, a comunicação deverá usar HTTPS e rede privada.
+
+servers:
+  - url: http://localhost:8000
+    description: Desenvolvimento local
+
+tags:
+  - name: Inferências
+    description: Análises realizadas pelo modelo de Data Science
+
+paths:
+  /v1/inferencias:
+    post:
+      tags:
+        - Inferências
+      summary: Analisar consumo energético
+      description: |
+        Recebe indicadores validados pelo Backend e retorna classificação,
+        probabilidade e recomendações.
+
+        O Backend está configurado provisoriamente com até 300 ms para
+        estabelecer conexão e 1.500 ms para aguardar a resposta. Ele não
+        repete automaticamente a chamada. Respostas inválidas ou falhas do
+        serviço são convertidas pela API pública em
+        `503 SERVICO_INFERENCIA_INDISPONIVEL`.
+      operationId: analisarConsumoEnergetico
+      security:
+        - serviceBearer: []
+      x-timeout-conexao-ms: 300
+      x-timeout-resposta-ms: 1500
+      requestBody:
+        required: true
+        description: Indicadores de consumo validados pelo Backend
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InferenciaRequest'
+            examples:
+              comercioModerado:
+                summary: Exemplo de consumo moderado em um comércio
+                value:
+                  consumo_kwh: 305
+                  uso_horario_pico: false
+                  quantidade_equipamentos: 13
+                  tipo_imovel: Comércio
+                  horas_alto_consumo: 2
+      responses:
+        '200':
+          description: Inferência concluída com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InferenciaResponse'
+              examples:
+                moderado:
+                  summary: Resultado classificado como moderado
+                  value:
+                    categoria: Moderado
+                    probabilidade: 0.78
+                    recomendacoes:
+                      - Reduzir o uso de equipamentos no horário de pico.
+                      - Revisar equipamentos com alto consumo.
+        '400':
+          $ref: '#/components/responses/EntradaInvalida'
+        '401':
+          $ref: '#/components/responses/NaoAutorizado'
+        '500':
+          $ref: '#/components/responses/ErroInferencia'
+        '503':
+          $ref: '#/components/responses/ModeloIndisponivel'
+
+components:
+  securitySchemes:
+    serviceBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: token interno
+      description: >-
+        Segredo compartilhado entre Backend e Data Science. Deve ser
+        configurado por variável de ambiente e nunca versionado.
+
+  schemas:
+    InferenciaRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - consumo_kwh
+        - uso_horario_pico
+        - quantidade_equipamentos
+        - tipo_imovel
+        - horas_alto_consumo
+      properties:
+        consumo_kwh:
+          type: number
+          exclusiveMinimum: 0
+          maximum: 700
+          multipleOf: 0.001
+          description: >-
+            Consumo energético mensal em kWh. Valores abaixo de 80 kWh estão
+            fora da faixa de treinamento atual.
+          examples:
+            - 305
+        uso_horario_pico:
+          type: boolean
+          description: Indica se existe uso relevante no horário de pico
+          examples:
+            - false
+        quantidade_equipamentos:
+          type: integer
+          minimum: 1
+          maximum: 17
+          description: >-
+            Quantidade de equipamentos do imóvel. Valores de 1 ou 2 estão fora
+            da faixa de treinamento atual.
+          examples:
+            - 13
+        tipo_imovel:
+          type: string
+          enum:
+            - Casa
+            - Apartamento
+            - Comércio
+          description: Tipo de imóvel acordado entre Backend e Data Science
+          examples:
+            - Comércio
+        horas_alto_consumo:
+          type: integer
+          minimum: 1
+          maximum: 24
+          description: >-
+            Quantidade diária de horas de alto consumo. Valores entre 12 e 24
+            estão fora da faixa de treinamento atual.
+          examples:
+            - 2
+
+    InferenciaResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - categoria
+        - probabilidade
+        - recomendacoes
+      properties:
+        categoria:
+          type: string
+          enum:
+            - Eficiente
+            - Moderado
+            - Ineficiente
+          description: Classificação produzida pelo modelo
+        probabilidade:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Probabilidade da categoria escolhida, entre zero e um
+        recomendacoes:
+          type: array
+          minItems: 1
+          maxItems: 10
+          description: Recomendações para melhorar a eficiência energética
+          items:
+            type: string
+            minLength: 1
+            description: Texto limitado pelo Backend a 500 bytes em UTF-8
+
+    ErroResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - erro
+        - mensagem
+      properties:
+        erro:
+          type: string
+          minLength: 1
+          description: Código estável e legível por máquina
+        mensagem:
+          type: string
+          minLength: 1
+          description: Explicação técnica resumida da falha
+
+  responses:
+    NaoAutorizado:
+      description: Token interno ausente ou inválido
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErroResponse'
+          example:
+            erro: NAO_AUTORIZADO
+            mensagem: Credencial interna ausente ou inválida
+
+    EntradaInvalida:
+      description: JSON ausente, inválido ou com campos fora do contrato
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErroResponse'
+          example:
+            erro: ENTRADA_INVALIDA
+            mensagem: tipo_imovel possui um valor desconhecido
+
+    ErroInferencia:
+      description: Erro inesperado durante a execução da inferência
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErroResponse'
+          example:
+            erro: ERRO_INFERENCIA
+            mensagem: Não foi possível concluir a análise energética
+
+    ModeloIndisponivel:
+      description: Modelo não carregado ou temporariamente indisponível
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErroResponse'
+          example:
+            erro: MODELO_INDISPONIVEL
+            mensagem: O modelo de análise energética não está disponível

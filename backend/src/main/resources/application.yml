@@ -1,0 +1,62 @@
+spring:
+  application:
+    name: intelliwatts-backend
+
+  datasource:
+    url: "jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3307}/${DB_NAME:intelliwatts}?preserveInstants=true&connectionTimeZone=SERVER&sslMode=${DB_SSL_MODE:VERIFY_IDENTITY}"
+    username: ${DB_USER:intelliwatts}
+    password: ${DB_PASSWORD:intelliwatts_local}
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+
+  jackson:
+    mapper:
+      allow-coercion-of-scalars: false
+    deserialization:
+      accept-float-as-int: false
+      fail-on-unknown-properties: true
+
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    session:
+      timeout: ${SESSION_TIMEOUT:30m}
+      cookie:
+        http-only: true
+        same-site: lax
+        secure: ${SESSION_COOKIE_SECURE:true}
+
+intelliwatts:
+  security:
+    session:
+      timeout: ${SESSION_TIMEOUT:30m}
+    cors:
+      origens-permitidas: ${CORS_ALLOWED_ORIGINS:}
+  http:
+    tamanho-maximo-corpo-bytes: ${HTTP_MAX_REQUEST_BODY_BYTES:16384}
+  rate-limit:
+    janela: ${RATE_LIMIT_JANELA:1m}
+    analises-por-janela: ${RATE_LIMIT_ANALISES_POR_JANELA:30}
+    logins-por-janela: ${RATE_LIMIT_LOGINS_POR_JANELA:10}
+    cadastros-por-janela: ${RATE_LIMIT_CADASTROS_POR_JANELA:5}
+    csrf-por-janela: ${RATE_LIMIT_CSRF_POR_JANELA:60}
+    maximo-chaves: ${RATE_LIMIT_MAXIMO_CHAVES:10000}
+  analise:
+    tarifa-referencia: ${TARIFA_REFERENCIA:0.75}
+  datascience:
+    base-url: ${DATASCIENCE_BASE_URL:http://localhost:8000}
+    caminho-inferencia: ${DATASCIENCE_CAMINHO_INFERENCIA:/v1/inferencias}
+    tempo-conexao: ${DATASCIENCE_TEMPO_CONEXAO:300ms}
+    tempo-resposta: ${DATASCIENCE_TEMPO_RESPOSTA:1500ms}
+    tamanho-maximo-resposta-bytes: ${DATASCIENCE_TAMANHO_MAXIMO_RESPOSTA_BYTES:16384}
+    service-token: ${DATASCIENCE_SERVICE_TOKEN:intelliwatts-local-only-token-000000}
