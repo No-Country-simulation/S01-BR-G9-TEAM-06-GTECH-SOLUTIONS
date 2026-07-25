@@ -19,6 +19,8 @@ export function NewAnalysis() {
     const [horasAltoConsumo, setHorasAltoConsumo] = useState("");
     const [usoHorarioPico, setUsoHorarioPico] = useState(false);
 
+    const [error, setError] = useState("");
+
     const {
       setDashboardData,
       history,
@@ -26,6 +28,57 @@ export function NewAnalysis() {
     } = useDashboard();
 
     async function handleAnalysis() {
+
+       // Campos obrigatórios
+  if (
+    consumo.trim() === "" ||
+    equipamentos.trim() === "" ||
+    horasAltoConsumo.trim() === ""
+  ) {
+    setError("Preencha todos os campos obrigatórios antes de realizar a análise.");
+    return;
+  }
+
+  const consumoNumber = Number(consumo);
+  const equipamentosNumber = Number(equipamentos);
+  const horasNumber = Number(horasAltoConsumo);
+
+  // Consumo
+  if (consumoNumber <= 0) {
+    setError("O consumo deve ser maior que 0 kWh.");
+    return;
+  }
+
+  // Equipamentos
+  if (equipamentosNumber <= 0) {
+    setError("Informe pelo menos 1 equipamento.");
+    return;
+  }
+
+  // Horas
+  if (horasNumber < 1 || horasNumber > 24) {
+    setError("As horas de alto consumo devem estar entre 1 e 24.");
+    return;
+  }
+
+  setError("");
+
+  setFinished(false);
+  setLoading(true);
+
+      // Validação dos campos obrigatórios
+  if (
+    consumo.trim() === "" ||
+    equipamentos.trim() === "" ||
+    horasAltoConsumo.trim() === ""
+  ) {
+    setError("Preencha todos os campos obrigatórios antes de realizar a análise.");
+    return;
+  }
+
+      // Limpa mensagens de erro anteriores
+  setError("");
+
   setFinished(false);
   setLoading(true);
 
@@ -39,13 +92,15 @@ export function NewAnalysis() {
     });
 
     setDashboardData(resultado);
-    setHistory([
+
+setHistory((prevHistory) => [
   {
+    id: crypto.randomUUID(),
     data: new Date().toLocaleDateString("pt-BR"),
     categoria: resultado.perfil,
     consumo: resultado.consumoAtual,
   },
-  ...history,
+  ...prevHistory,
 ]);
 
     setLoading(false);
@@ -92,6 +147,7 @@ export function NewAnalysis() {
 
             <input
               type="number"
+              min={1}
               placeholder="Ex.: 420"
               value={consumo}
               onChange={(e) => setConsumo(e.target.value)}
@@ -141,6 +197,8 @@ export function NewAnalysis() {
 
             <input
               type="number"
+              min={1}
+              max={24}
               placeholder="Ex.: 8"
               value={horasAltoConsumo}
               onChange={(e) => setHorasAltoConsumo(e.target.value)}
@@ -179,6 +237,28 @@ export function NewAnalysis() {
             hover:bg-yellow-600
           "
         >
+          {error && (
+            <div
+              className="
+                mt-8
+                rounded-2xl
+                border
+                border-red-200
+                bg-red-50
+                p-4
+                text-red-700
+                shadow-sm
+              "
+            >
+              <span className="font-semibold">
+                ⚠ Atenção
+              </span>
+
+              <p className="mt-1">
+                {error}
+              </p>
+            </div>
+          )}
           Analisar Consumo
         </button>
 

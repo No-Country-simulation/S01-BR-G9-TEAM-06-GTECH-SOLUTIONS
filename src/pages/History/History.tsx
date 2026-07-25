@@ -11,19 +11,33 @@ export function History() {
     "Todos" | "Eficiente" | "Moderado" | "Ineficiente"
   >("Todos");
 
-  const total = history.length;
+const statistics = history.reduce(
+  (acc, item) => {
+    acc.total++;
 
-  const eficientes = history.filter(
-    (item) => item.categoria === "Eficiente"
-  ).length;
+    switch (item.categoria) {
+      case "Eficiente":
+        acc.eficientes++;
+        break;
 
-  const moderados = history.filter(
-    (item) => item.categoria === "Moderado"
-  ).length;
+      case "Moderado":
+        acc.moderados++;
+        break;
 
-  const ineficientes = history.filter(
-    (item) => item.categoria === "Ineficiente"
-  ).length;
+      case "Ineficiente":
+        acc.ineficientes++;
+        break;
+    }
+
+    return acc;
+  },
+  {
+    total: 0,
+    eficientes: 0,
+    moderados: 0,
+    ineficientes: 0,
+  }
+);
 
   return (
     <div>
@@ -53,7 +67,7 @@ export function History() {
           </p>
 
           <h2 className="mt-2 text-3xl font-bold">
-            {total}
+            {statistics.total}
           </h2>
 
         </div>
@@ -66,10 +80,10 @@ export function History() {
 
           <h2 className="mt-2 text-3xl font-bold text-yellow-500">
 
-            {eficientes >= moderados &&
-            eficientes >= ineficientes
+            {statistics.eficientes >= statistics.moderados &&
+            statistics.eficientes >= statistics.ineficientes
               ? "Eficiente"
-              : moderados >= ineficientes
+              : statistics.moderados >= statistics.ineficientes
               ? "Moderado"
               : "Ineficiente"}
 
@@ -127,7 +141,7 @@ export function History() {
               : "bg-slate-100 hover:bg-slate-200"
           }`}
         >
-          Todos ({total})
+          Todos ({statistics.total})
         </button>
 
         <button
@@ -138,7 +152,7 @@ export function History() {
               : "bg-green-100 text-green-700 hover:bg-green-200"
           }`}
         >
-          Eficiente ({eficientes})
+          Eficiente ({statistics.eficientes})
         </button>
 
         <button
@@ -149,7 +163,7 @@ export function History() {
               : "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
           }`}
         >
-          Moderado ({moderados})
+          Moderado ({statistics.moderados})
         </button>
 
         <button
@@ -160,7 +174,7 @@ export function History() {
               : "bg-red-100 text-red-700 hover:bg-red-200"
           }`}
         >
-          Ineficiente ({ineficientes})
+          Ineficiente ({statistics.ineficientes})
         </button>
 
       </div>

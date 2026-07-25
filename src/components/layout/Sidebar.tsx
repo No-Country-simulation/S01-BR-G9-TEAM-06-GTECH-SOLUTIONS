@@ -58,19 +58,39 @@ export function Sidebar() {
                     }
                     >
 
-                    <ChartColumn size={20} />
+                    <FileText size={20} />
 
                     Histórico
 
                 </NavLink>
 
-                <button className="w-full flex items-center gap-3 rounded-xl p-3 hover:bg-yellow-100">
+                <NavLink
+                    to="/analytics"
+                    className={({ isActive }) =>
+                        `flex w-full items-center gap-3 rounded-xl p-3 transition ${
+                        isActive
+                            ? "bg-yellow-100 font-semibold"
+                            : "hover:bg-yellow-100"
+                        }`
+                    }
+                    >
+                    <ChartColumn size={20} />
+                    Analytics
+                </NavLink>
 
+                <NavLink
+                    to="/reports"
+                    className={({ isActive }) =>
+                        `flex w-full items-center gap-3 rounded-xl p-3 transition ${
+                        isActive
+                            ? "bg-yellow-400 text-white shadow-md"
+                            : "hover:bg-yellow-100"
+                        }`
+                    }
+                    >
                     <FileText size={20} />
-
                     Relatórios
-
-                </button>
+                </NavLink>
 
                 <button className="w-full flex items-center gap-3 rounded-xl p-3 hover:bg-yellow-100">
 

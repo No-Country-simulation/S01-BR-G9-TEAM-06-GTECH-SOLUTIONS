@@ -85,7 +85,7 @@ export function HistoryTable({
           {displayedHistory.map((item) => (
 
             <tr
-              key={`${item.data}-${item.consumo}`}
+              key={item.id}
               className="border-b hover:bg-slate-50 transition"
             >
 

@@ -18,7 +18,8 @@ type DashboardContextType = {
   setHistory: React.Dispatch<React.SetStateAction<HistoryItem[]>>;
 };
 
-type HistoryItem = {
+export type HistoryItem = {
+  id: string;
   data: string;
   categoria: string;
   consumo: string;
@@ -48,13 +49,14 @@ export function DashboardProvider({
     ],
   });
 
-  const [history, setHistory] = useState<HistoryItem[]>([
+const [history, setHistory] = useState<HistoryItem[]>([
   {
+    id: crypto.randomUUID(),
     data: "20/07/2026",
     categoria: "Moderado",
     consumo: "420 kWh",
   },
-  ]);
+]);
 
   return (
     <DashboardContext.Provider
