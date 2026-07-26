@@ -1,9 +1,11 @@
-import { useDashboard } from "../../context/DashboardContext";
+import { useDashboard } from "../../context";
 import { WelcomeBanner } from "../../components/dashboard/WelcomeBanner";
 import { StatCard } from "../../components/dashboard/StatCard";
 import { EnergyChart } from "../../components/dashboard/EnergyChart";
 import { RecommendationPanel } from "../../components/dashboard/RecommendationPanel";
 import { HistoryTable } from "../../components/dashboard/HistoryTable";
+import { ExecutiveMetrics } from "../../components/dashboard/ExecutiveMetrics";
+import { ConsumptionInsights } from "../../components/dashboard/ConsumptionInsights";
 
 import {
   Bolt,
@@ -50,14 +52,23 @@ export function Dashboard() {
           icon={<TrendingUp size={28} />}
         />
 
+        
       </section>
+
+      <ExecutiveMetrics />
 
       <section className="mt-8 grid gap-8 lg:grid-cols-2">
 
-        <EnergyChart />
+        <div className="space-y-8">
+
+          <EnergyChart />
+
+          <ConsumptionInsights />
+
+        </div>
 
         <RecommendationPanel />
-
+        
       </section>
 
       <section className="mt-8">

@@ -1,107 +1,134 @@
 import { NavLink } from "react-router-dom";
 
 import {
-    House,
-    Bolt,
-    ChartColumn,
-    FileText,
-    Settings
+  House,
+  Bolt,
+  ChartColumn,
+  FileText,
+  Settings,
 } from "lucide-react";
 
+const menuItems = [
+  {
+    label: "Dashboard",
+    path: "/dashboard",
+    icon: House,
+  },
+  {
+    label: "Nova análise",
+    path: "/nova-analise",
+    icon: Bolt,
+  },
+  {
+    label: "Analytics",
+    path: "/analytics",
+    icon: ChartColumn,
+  },
+  {
+    label: "Relatórios",
+    path: "/reports",
+    icon: FileText,
+  },
+  {
+    label: "Configurações",
+    path: "/settings",
+    icon: Settings,
+  },
+];
+
 export function Sidebar() {
-    return (
-        <aside className="w-72 bg-white border-r border-slate-200 h-screen">
+  return (
+    <aside className="flex h-screen w-72 flex-col border-r border-slate-200 bg-white">
 
-            <div className="p-8">
+      {/* Logo */}
 
-                <h1 className="text-2xl font-bold text-yellow-500">
+      <div className="border-b border-slate-200 p-8">
 
-                    ⚡ IntelliWatts
+        <h1 className="text-3xl font-bold text-yellow-500">
 
-                </h1>
+          ⚡ IntelliWatts
 
-            </div>
+        </h1>
 
-            <nav className="px-4 space-y-2">
+      </div>
 
-                <NavLink
-                to="/dashboard"
-                className={({ isActive }) =>
-                    `flex w-full items-center gap-3 rounded-xl p-3 transition ${
+      {/* Menu */}
+
+      <nav className="flex-1 space-y-2 p-4">
+
+        {menuItems.map((item) => {
+
+          const Icon = item.icon;
+
+          return (
+
+            <NavLink
+              key={item.path}
+              to={item.path}
+            >
+              {({ isActive }) => (
+                <div
+                  className={`relative flex items-center gap-3 rounded-xl p-3 transition-all duration-300 ${
                     isActive
-                        ? "bg-yellow-400 text-white shadow-md"
-                        : "hover:bg-yellow-100"
-                    }`
-                }
+                      ? "bg-yellow-400 text-white shadow-lg"
+                      : "text-slate-600 hover:bg-yellow-100"
+                  }`}
                 >
-                <House size={20} />
-                Dashboard
-                </NavLink>
 
-                <NavLink
-                to="/nova-analise"
-                className="flex w-full items-center gap-3 rounded-xl p-3 hover:bg-yellow-100"
-                >
-                    <Bolt size={20} />
-                    Nova análise
-                </NavLink>
+                  {isActive && (
+                    <span className="absolute left-0 top-2 h-8 w-1 rounded-r-full bg-white" />
+                  )}
 
+                  <Icon size={20} />
 
-                <NavLink
-                    to="/history"
-                    className={({ isActive }) =>
-                        `flex w-full items-center gap-3 rounded-xl p-3 transition ${
-                        isActive
-                            ? "bg-yellow-100 font-semibold"
-                            : "hover:bg-yellow-100"
-                        }`
-                    }
-                    >
+                  <span className="font-medium">
 
-                    <FileText size={20} />
+                    {item.label}
 
-                    Histórico
+                  </span>
 
-                </NavLink>
+                </div>
+              )}
+            </NavLink>
 
-                <NavLink
-                    to="/analytics"
-                    className={({ isActive }) =>
-                        `flex w-full items-center gap-3 rounded-xl p-3 transition ${
-                        isActive
-                            ? "bg-yellow-100 font-semibold"
-                            : "hover:bg-yellow-100"
-                        }`
-                    }
-                    >
-                    <ChartColumn size={20} />
-                    Analytics
-                </NavLink>
+          );
 
-                <NavLink
-                    to="/reports"
-                    className={({ isActive }) =>
-                        `flex w-full items-center gap-3 rounded-xl p-3 transition ${
-                        isActive
-                            ? "bg-yellow-400 text-white shadow-md"
-                            : "hover:bg-yellow-100"
-                        }`
-                    }
-                    >
-                    <FileText size={20} />
-                    Relatórios
-                </NavLink>
+        })}
 
-                <button className="w-full flex items-center gap-3 rounded-xl p-3 hover:bg-yellow-100">
+      </nav>
 
-                    <Settings size={20} />
+      {/* Rodapé */}
 
-                    Configurações
+      <div className="border-t border-slate-200 p-6">
 
-                </button>
+        <div className="flex items-center gap-3">
 
-            </nav>
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-500 text-lg font-bold text-white">
 
-        </aside>
-    );
+            MC
+
+          </div>
+
+          <div>
+
+            <p className="font-semibold text-slate-800">
+
+              Matheus Cunha
+
+            </p>
+
+            <p className="text-xs text-slate-500">
+
+              IntelliWatts v1.0
+
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </aside>
+  );
 }

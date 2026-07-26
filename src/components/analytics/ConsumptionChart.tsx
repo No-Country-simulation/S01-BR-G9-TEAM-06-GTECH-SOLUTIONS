@@ -8,8 +8,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-import { useDashboard } from "../../context/DashboardContext";
-
+import { useDashboard } from "../../context";
 export function ConsumptionChart() {
 
   const { history } = useDashboard();

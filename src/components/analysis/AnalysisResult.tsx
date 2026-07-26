@@ -4,8 +4,7 @@ import {
   Gauge,
 } from "lucide-react";
 
-import { useDashboard } from "../../context/DashboardContext";
-
+import { useDashboard } from "../../context";
 export function AnalysisResult() {
 
   const { dashboardData } = useDashboard();

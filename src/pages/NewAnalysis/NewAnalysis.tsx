@@ -3,9 +3,8 @@ import { Zap } from "lucide-react";
 
 import { LoadingAnalysis } from "../../components/analysis/LoadingAnalysis";
 import { AnalysisResult } from "../../components/analysis/AnalysisResult";
-import { useDashboard } from "../../context/DashboardContext";
+import { useDashboard } from "../../context";
 import { simulateAnalysis } from "../../services/analysisSimulator";
-import { analyzeConsumption } from "../../services/analysisService";
 
 
 export function NewAnalysis() {
@@ -23,7 +22,6 @@ export function NewAnalysis() {
 
     const {
       setDashboardData,
-      history,
       setHistory,
     } = useDashboard();
 

@@ -7,7 +7,7 @@ import {
   Legend,
 } from "recharts";
 
-import { useDashboard } from "../../context/DashboardContext";
+import { useDashboard } from "../../context";
 
 const COLORS = [
   "#22c55e", // Verde

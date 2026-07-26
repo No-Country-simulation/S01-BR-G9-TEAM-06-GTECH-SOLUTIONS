@@ -10,6 +10,8 @@ import { MainLayout } from "../layouts/MainLayout";
 
 import { Reports } from "../pages/Reports/Reports";
 
+import { Settings } from "../pages/Settings/Settings";
+
 export function AppRoutes() {
   return (
     <BrowserRouter>
@@ -63,6 +65,15 @@ export function AppRoutes() {
             </MainLayout>
           }
         />
+
+        <Route
+        path="/configuracoes"
+        element={
+          <MainLayout>
+            <Settings />
+          </MainLayout>
+        }
+      />
 
       </Routes>
     </BrowserRouter>

@@ -1,4 +1,4 @@
-import { useDashboard } from "../../context/DashboardContext";
+import { useDashboard } from "../../context";
 
 import {
   FileDown,

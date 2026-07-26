@@ -1,4 +1,4 @@
-import type { HistoryItem } from "../context/DashboardContext";
+import type { HistoryItem } from "../context";
 
 export type AnalyticsData = {
   totalAnalises: number;

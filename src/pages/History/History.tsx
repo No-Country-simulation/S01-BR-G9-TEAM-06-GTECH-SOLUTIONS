@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useDashboard } from "../../context/DashboardContext";
+import { useDashboard } from "../../context";
 import { HistoryTable } from "../../components/dashboard/HistoryTable";
 
 export function History() {

@@ -5,7 +5,7 @@ import {
   Gauge,
 } from "lucide-react";
 
-import { useDashboard } from "../../context/DashboardContext";
+import { useDashboard } from "../../context";
 import { generateAnalytics } from "../../services/analyticsService";
 
 export function AnalyticsCards() {

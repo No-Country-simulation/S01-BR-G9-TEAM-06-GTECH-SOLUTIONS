@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-import type { HistoryItem } from "../context/DashboardContext";
+import type { HistoryItem } from "../context";
 import { generateAnalytics } from "./analyticsService";
 
 import * as XLSX from "xlsx";
