@@ -1,4 +1,4 @@
-import { useDashboard } from "../../context/DashboardContext";
+import { useDashboard } from "../../hooks/useDashboard";
 
 type HistoryTableProps = {
   limit?: number;

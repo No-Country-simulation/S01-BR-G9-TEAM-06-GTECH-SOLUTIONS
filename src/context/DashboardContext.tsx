@@ -1,30 +1,11 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
-export type DashboardData = {
-  consumoAtual: string;
-  perfil: string;
-  economia: string;
-  precisao: string;
+import {
+  DashboardContext,
+  type DashboardData,
+  type HistoryItem,
+} from "./dashboard-context"
 
-  mensagem: string;
-
-  recomendacoes: string[];
-};
-
-type DashboardContextType = {
-  dashboardData: DashboardData;
-  setDashboardData: React.Dispatch<React.SetStateAction<DashboardData>>;
-  history: HistoryItem[];
-  setHistory: React.Dispatch<React.SetStateAction<HistoryItem[]>>;
-};
-
-type HistoryItem = {
-  data: string;
-  categoria: string;
-  consumo: string;
-};
-
-const DashboardContext = createContext<DashboardContextType | null>(null);
 
 export function DashboardProvider({
   children,
@@ -68,16 +49,4 @@ export function DashboardProvider({
       {children}
     </DashboardContext.Provider>
   );
-}
-
-export function useDashboard() {
-  const context = useContext(DashboardContext);
-
-  if (!context) {
-    throw new Error(
-      "useDashboard deve ser usado dentro de DashboardProvider"
-    );
-  }
-
-  return context;
 }

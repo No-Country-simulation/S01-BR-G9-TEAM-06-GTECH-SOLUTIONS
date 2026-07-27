@@ -1,4 +1,4 @@
-import { useDashboard } from "../../context/DashboardContext";
+import { useDashboard } from "../../hooks/useDashboard";
 import { WelcomeBanner } from "../../components/dashboard/WelcomeBanner";
 import { StatCard } from "../../components/dashboard/StatCard";
 import { EnergyChart } from "../../components/dashboard/EnergyChart";

@@ -3,10 +3,8 @@ import { Zap } from "lucide-react";
 
 import { LoadingAnalysis } from "../../components/analysis/LoadingAnalysis";
 import { AnalysisResult } from "../../components/analysis/AnalysisResult";
-import { useDashboard } from "../../context/DashboardContext";
+import { useDashboard } from "../../hooks/useDashboard";
 import { simulateAnalysis } from "../../services/analysisSimulator";
-import { analyzeConsumption } from "../../services/analysisService";
-
 
 export function NewAnalysis() {
     const [loading, setLoading] = useState(false);
