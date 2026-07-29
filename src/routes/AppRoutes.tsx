@@ -1,79 +1,86 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { Landing } from "../pages/Landing/Landing";
+import { Login } from "../pages/Login/Login";
+
 import { Dashboard } from "../pages/Dashboard/Dashboard";
 import { NewAnalysis } from "../pages/NewAnalysis/NewAnalysis";
 import { History } from "../pages/History/History";
 import { Analytics } from "../pages/Analytics/Analytics";
+import { Reports } from "../pages/Reports/Reports";
+import { Settings } from "../pages/Settings/Settings";
 
 import { MainLayout } from "../layouts/MainLayout";
 
-import { Reports } from "../pages/Reports/Reports";
+import { ROUTES } from "../constants/routes";
 
-import { Settings } from "../pages/Settings/Settings";
+import { ProtectedRoute } from "./ProtectedRoute";
+import { GuestRoute } from "./GuestRoute";
 
 export function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
 
-        {/* Área pública */}
-        <Route path="/" element={<Landing />} />
+        {/* Landing */}
 
-        {/* Área da aplicação */}
         <Route
-          path="/dashboard"
+          path={ROUTES.LANDING}
+          element={<Landing />}
+        />
+
+        {/* Login */}
+
+        <Route
+          path={ROUTES.LOGIN}
           element={
-            <MainLayout>
-              <Dashboard />
-            </MainLayout>
+            <GuestRoute>
+              <Login />
+            </GuestRoute>
           }
         />
 
-        <Route
-          path="/nova-analise"
-          element={
-            <MainLayout>
-              <NewAnalysis />
-            </MainLayout>
-          }
-        />
+        {/* Área protegida */}
 
         <Route
-          path="/history"
           element={
-            <MainLayout>
-              <History />
-            </MainLayout>
+            <ProtectedRoute>
+              <MainLayout />
+            </ProtectedRoute>
           }
-        />
+        >
 
-        <Route
-          path="/analytics"
-          element={
-            <MainLayout>
-              <Analytics />
-            </MainLayout>
-          }
-        />
+          <Route
+            path={ROUTES.DASHBOARD}
+            element={<Dashboard />}
+          />
 
-        <Route
-          path="/reports"
-          element={
-            <MainLayout>
-              <Reports />
-            </MainLayout>
-          }
-        />
+          <Route
+            path={ROUTES.NEW_ANALYSIS}
+            element={<NewAnalysis />}
+          />
 
-        <Route
-        path="/configuracoes"
-        element={
-          <MainLayout>
-            <Settings />
-          </MainLayout>
-        }
-      />
+          <Route
+            path={ROUTES.HISTORY}
+            element={<History />}
+          />
+
+          <Route
+            path={ROUTES.ANALYTICS}
+            element={<Analytics />}
+          />
+
+          <Route
+            path={ROUTES.REPORTS}
+            element={<Reports />}
+          />
+
+          <Route
+            path={ROUTES.SETTINGS}
+            element={<Settings />}
+          />
+
+        </Route>
 
       </Routes>
     </BrowserRouter>

@@ -1,6 +1,8 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
+import { ROUTES } from "../../constants/routes";
+
 export function Hero() {
   return (
     <section className="mx-auto flex min-h-[85vh] max-w-7xl items-center px-8">
@@ -24,17 +26,41 @@ export function Hero() {
         <div className="mt-10 flex gap-5">
 
           <Link
-            to="/dashboard"
-            className="flex items-center gap-3 rounded-xl bg-yellow-400 px-8 py-4 font-semibold transition hover:bg-yellow-500"
+            to={ROUTES.LOGIN}
+            className="
+              flex
+              items-center
+              gap-3
+              rounded-xl
+              bg-yellow-400
+              px-8
+              py-4
+              font-semibold
+              transition
+              hover:bg-yellow-500
+            "
           >
             Conhecer Plataforma
 
             <ArrowRight size={20} />
+
           </Link>
 
-          <button className="rounded-xl border border-slate-300 px-8 py-4 font-semibold hover:bg-slate-100 transition">
+          <a
+            href="#tecnologias"
+            className="
+              rounded-xl
+              border
+              border-slate-300
+              px-8
+              py-4
+              font-semibold
+              transition
+              hover:bg-slate-100
+            "
+          >
             Ver Tecnologias
-          </button>
+          </a>
 
         </div>
 
@@ -42,7 +68,7 @@ export function Hero() {
 
       <div className="flex flex-1 justify-center">
 
-        <div className="flex h-[420px] w-[420px] items-center justify-center rounded-3xl border border-slate-200 bg-white shadow-xl">
+        <div className="flex h-105 w-105 items-center justify-center rounded-3xl border border-slate-200 bg-white shadow-xl">
 
           <span className="text-[150px]">
             ⚡

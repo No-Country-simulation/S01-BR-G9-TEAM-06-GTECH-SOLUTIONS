@@ -1,146 +1,46 @@
-import {
-  Moon,
-  Bell,
-  User,
-  Info,
-  ChevronRight,
-} from "lucide-react";
+import { Settings as SettingsIcon } from "lucide-react";
+
+import { PreferencesCard } from "../../components/settings/PreferencesCard";
+import { AISettingsCard } from "../../components/settings/AISettingsCard";
+import { SystemInfoCard } from "../../components/settings/SystemInfoCard";
+import { SecurityCard } from "../../components/settings/SecurityCard";
 
 export function Settings() {
   return (
-    <div>
+    <div className="space-y-8">
 
-      <div className="mb-8">
+      <div>
 
-        <h1 className="text-4xl font-bold">
-          Configurações
-        </h1>
+        <div className="flex items-center gap-3">
+
+          <SettingsIcon
+            size={34}
+            className="text-yellow-500"
+          />
+
+          <h1 className="text-4xl font-bold text-slate-800">
+            Configurações
+          </h1>
+
+        </div>
 
         <p className="mt-3 text-slate-500">
-          Personalize sua experiência no IntelliWatts.
+          Personalize o IntelliWatts e visualize informações do sistema.
         </p>
 
       </div>
 
-      <div className="grid gap-6">
+      <section className="grid gap-8 lg:grid-cols-2">
 
-        {/* Aparência */}
+        <PreferencesCard />
 
-        <div className="flex items-center justify-between rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <AISettingsCard />
 
-          <div className="flex items-center gap-4">
+      </section>
 
-            <Moon
-              size={28}
-              className="text-yellow-500"
-            />
+      <SystemInfoCard />
 
-            <div>
-
-              <h2 className="font-semibold text-lg">
-                Aparência
-              </h2>
-
-              <p className="text-sm text-slate-500">
-                Altere entre modo claro e escuro.
-              </p>
-
-            </div>
-
-          </div>
-
-          <ChevronRight />
-
-        </div>
-
-        {/* Notificações */}
-
-        <div className="flex items-center justify-between rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-
-          <div className="flex items-center gap-4">
-
-            <Bell
-              size={28}
-              className="text-yellow-500"
-            />
-
-            <div>
-
-              <h2 className="font-semibold text-lg">
-                Notificações
-              </h2>
-
-              <p className="text-sm text-slate-500">
-                Gerencie os alertas do sistema.
-              </p>
-
-            </div>
-
-          </div>
-
-          <ChevronRight />
-
-        </div>
-
-        {/* Perfil */}
-
-        <div className="flex items-center justify-between rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-
-          <div className="flex items-center gap-4">
-
-            <User
-              size={28}
-              className="text-yellow-500"
-            />
-
-            <div>
-
-              <h2 className="font-semibold text-lg">
-                Perfil
-              </h2>
-
-              <p className="text-sm text-slate-500">
-                Atualize suas informações.
-              </p>
-
-            </div>
-
-          </div>
-
-          <ChevronRight />
-
-        </div>
-
-        {/* Sobre */}
-
-        <div className="flex items-center justify-between rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-
-          <div className="flex items-center gap-4">
-
-            <Info
-              size={28}
-              className="text-yellow-500"
-            />
-
-            <div>
-
-              <h2 className="font-semibold text-lg">
-                Sobre
-              </h2>
-
-              <p className="text-sm text-slate-500">
-                IntelliWatts • versão 1.0
-              </p>
-
-            </div>
-
-          </div>
-
-          <ChevronRight />
-
-        </div>
-
-      </div>
+      <SecurityCard />
 
     </div>
   );

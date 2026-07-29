@@ -5,7 +5,7 @@ import {
   BarChart3,
 } from "lucide-react";
 
-import { useDashboard } from "../../context";
+import { useDashboard } from "../../context/useDashboard";
 
 export function ExecutiveMetrics() {
 

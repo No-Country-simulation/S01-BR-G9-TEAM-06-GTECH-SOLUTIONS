@@ -1,4 +1,5 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { ROUTES } from "../../constants/routes";
 
 import {
   House,
@@ -6,7 +7,10 @@ import {
   ChartColumn,
   FileText,
   Settings,
+  LogOut,
 } from "lucide-react";
+
+import { useAuth } from "../../context/auth/useAuth";
 
 const menuItems = [
   {
@@ -37,6 +41,19 @@ const menuItems = [
 ];
 
 export function Sidebar() {
+
+  const { user, logout } = useAuth();
+
+  const navigate = useNavigate();
+
+  function handleLogout() {
+
+    logout();
+
+    navigate(ROUTES.LANDING);
+
+  }
+
   return (
     <aside className="flex h-screen w-72 flex-col border-r border-slate-200 bg-white">
 
@@ -45,9 +62,7 @@ export function Sidebar() {
       <div className="border-b border-slate-200 p-8">
 
         <h1 className="text-3xl font-bold text-yellow-500">
-
           ⚡ IntelliWatts
-
         </h1>
 
       </div>
@@ -67,6 +82,7 @@ export function Sidebar() {
               to={item.path}
             >
               {({ isActive }) => (
+
                 <div
                   className={`relative flex items-center gap-3 rounded-xl p-3 transition-all duration-300 ${
                     isActive
@@ -82,12 +98,11 @@ export function Sidebar() {
                   <Icon size={20} />
 
                   <span className="font-medium">
-
                     {item.label}
-
                   </span>
 
                 </div>
+
               )}
             </NavLink>
 
@@ -105,15 +120,15 @@ export function Sidebar() {
 
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-500 text-lg font-bold text-white">
 
-            MC
+            {user?.nome.charAt(0) ?? "U"}
 
           </div>
 
-          <div>
+          <div className="flex-1">
 
             <p className="font-semibold text-slate-800">
 
-              Matheus Cunha
+              {user?.nome ?? "Usuário"}
 
             </p>
 
@@ -126,6 +141,31 @@ export function Sidebar() {
           </div>
 
         </div>
+
+        <button
+          onClick={handleLogout}
+          className="
+            mt-6
+            flex
+            w-full
+            items-center
+            justify-center
+            gap-2
+            rounded-xl
+            border
+            border-red-200
+            py-3
+            text-red-600
+            transition
+            hover:bg-red-50
+          "
+        >
+
+          <LogOut size={18} />
+
+          Sair
+
+        </button>
 
       </div>
 
