@@ -1,5 +1,8 @@
 import { LoginForm } from "../../components/login/LoginForm";
 import { LoginPresentation } from "../../components/login/LoginPresentation";
+import { Link } from "react-router-dom";
+
+import { ROUTES } from "../../constants/routes";
 
 export function Login() {
   return (
@@ -58,6 +61,16 @@ export function Login() {
               </div>
 
               <LoginForm />
+
+              <p className="mt-6 text-center text-sm text-slate-600">
+              Ainda não possui conta?{" "}
+              <Link
+                to={ROUTES.SIGNUP}
+                className="font-semibold text-yellow-600 hover:text-yellow-700"
+              >
+                Cadastre-se
+              </Link>
+              </p>
 
             </div>
 
