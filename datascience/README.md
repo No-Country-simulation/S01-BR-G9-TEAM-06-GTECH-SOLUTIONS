@@ -67,19 +67,25 @@ O módulo de Ciência de Dados possui como responsabilidades:
 # 📂 Estrutura da Branch
 
 ```
-DataScience/
-│
+datascience/
+├── __init__.py
 ├── app.py
-├── energia.py
 ├── energia_engine.py
-├── modelo_energiAI.pkl
-├── requirements.txt
 ├── README.md
-│
+├── requirements.txt
 ├── datasets/
+│   ├── README.md
 │   ├── consumo_energetico.csv
 │   └── consumo_energetico_processado.csv
+├── docs/
+│   └── API.md
+└── training/
+    └── energia.py
 ```
+
+> O arquivo `modelo_energiAI.pkl` não é versionado. Em execução, ele será
+> baixado do OCI Object Storage e armazenado temporariamente em
+> `datascience/modelo_energiAI.pkl`.
 
 ---
 
@@ -259,7 +265,7 @@ source .venv/bin/activate
 Instale as dependências:
 
 ```bash
-pip install -r requirements.txt
+python -m uvicorn datascience.app:app --reload
 ```
 
 ---
@@ -267,12 +273,7 @@ pip install -r requirements.txt
 # ▶️ Executando a API
 
 ```bash
-#Opção 1
-cd DataScience
-python -m uvicorn app:app --reload
-
-#Opção 2 (a partir da raiz do repositório)
-python -m uvicorn DataScience.app:app --reload
+python -m uvicorn datascience.app:app --reload
 ```
 
 Servidor:

@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from energia_engine import analisar
+from .energia_engine import analisar
 
 app = FastAPI(
     title="IntelliWatts API",

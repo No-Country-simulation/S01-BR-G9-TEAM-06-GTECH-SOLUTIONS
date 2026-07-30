@@ -7,13 +7,32 @@ Original file is located at
     https://colab.research.google.com/drive/1t4ZK9kA4oPeVhwSU-X2PoyqEQrFWn8yC
 """
 
+from pathlib import Path
+
 import pandas as pd
 import matplotlib.pyplot as plt
+
+
+DATASCIENCE_DIR = Path(__file__).resolve().parents[1]
+
+DATASET_ORIGINAL_PATH = (
+    DATASCIENCE_DIR
+    / "datasets"
+    / "consumo_energetico.csv"
+)
+
+DATASET_PROCESSADO_PATH = (
+    DATASCIENCE_DIR
+    / "datasets"
+    / "consumo_energetico_processado.csv"
+)
+
+MODEL_PATH = DATASCIENCE_DIR / "modelo_energiAI.pkl"
 
 #Configuração para gráficos
 plt.style.use("ggplot")
 
-df = pd.read_csv("consumo_energetico.csv")
+df = pd.read_csv(DATASET_ORIGINAL_PATH)
 
 df.head()
 
@@ -194,7 +213,7 @@ plt.show()
 
 #Salvando o dataset processado (para treinar os modelos)
 df.to_csv(
-    "consumo_energetico_processado.csv",
+    DATASET_PROCESSADO_PATH,
     index=False
 )
 
@@ -224,7 +243,7 @@ from sklearn.metrics import (
 )
 
 #Carregando o dataset processado
-df = pd.read_csv("consumo_energetico_processado.csv")
+df = pd.read_csv(DATASET_PROCESSADO_PATH)
 
 #Separando X e y
 y = df["categoria"]
@@ -482,11 +501,11 @@ import joblib
 
 joblib.dump(
     modelo_final,
-    "modelo_energiAI.pkl"
+    MODEL_PATH
 )
 
 modelo = joblib.load(
-    "modelo_energiAI.pkl"
+    MODEL_PATH
 )
 
 import pandas as pd
@@ -579,13 +598,13 @@ print(dados)
 
 """#lógica de negócio"""
 
-joblib.dump(modelo_final, "modelo_energiAI.pkl")
+joblib.dump(modelo_final, MODEL_PATH)
 
 import joblib
 import pandas as pd
 
 # Carrega o modelo salvo
-modelo = joblib.load("modelo_energiAI.pkl")
+modelo = joblib.load(MODEL_PATH)
 
 # Tarifa de referência do hackathon
 TARIFA = 0.75
