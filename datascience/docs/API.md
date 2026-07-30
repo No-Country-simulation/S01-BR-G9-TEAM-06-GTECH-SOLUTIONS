@@ -14,11 +14,20 @@ A API realiza apenas inferências, ou seja, **não realiza treinamento do modelo
 
 ```
 .
+datascience/
+├── __init__.py
 ├── app.py
-├── energia.py
 ├── energia_engine.py
-├── modelo_energiAI.pkl
+├── README.md
 ├── requirements.txt
+├── datasets/
+│   ├── README.md
+│   ├── consumo_energetico.csv
+│   └── consumo_energetico_processado.csv
+├── docs/
+│   └── API.md
+└── training/
+    └── energia.py
 ```
 
 ---
@@ -77,16 +86,15 @@ POST /v1/inferencias
 
 ---
 
-# energia.py
+# training/energia.py
 
 ## Finalidade
 
-Arquivo responsável pela definição do modelo de dados utilizado pela API.
+Script utilizado para análise exploratória, engenharia de atributos,
+treinamento, avaliação e serialização do modelo.
 
-Foi implementado utilizando **Pydantic**.
-
-Sua função é validar automaticamente todas as informações recebidas pelo endpoint antes que elas sejam enviadas ao modelo de Machine Learning.
-
+Esse arquivo não é executado pela API durante as inferências. O modelo
+Pydantic utilizado para validar as requisições está definido em `app.py`.
 ---
 
 ## Campos validados
@@ -248,8 +256,7 @@ source .venv/bin/activate
 Instalar as dependências:
 
 ```
-pip install -r requirements.txt
-```
+python -m pip install -r datascience/requirements.txt
 
 ---
 
@@ -299,7 +306,7 @@ Resposta JSON
 Iniciar o servidor:
 
 ```
-python -m uvicorn app:app --reload
+python -m pip install -r datascience/requirements.txt
 ```
 
 Servidor disponível em:

@@ -143,7 +143,10 @@ Por esse motivo ela foi removida da versão final da API para manter consistênc
 
 # Modelo treinado
 
-O modelo final encontra-se no arquivo:
+O treinamento gera o artefato `modelo_energiAI.pkl`.
+
+Esse arquivo não é versionado no Git. No ambiente de execução, ele deverá
+ser obtido do OCI Object Storage antes da inicialização da API.
 
 ```
 modelo_energiAI.pkl

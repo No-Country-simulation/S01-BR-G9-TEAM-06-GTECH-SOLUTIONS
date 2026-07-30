@@ -1,3 +1,4 @@
+from pathlib import Path
 
 import joblib
 import pandas as pd
@@ -6,7 +7,12 @@ import pandas as pd
 # Carrega o modelo treinado
 # ============================================
 
-modelo = joblib.load("modelo_energiAI.pkl")
+MODEL_PATH = (
+    Path(__file__).resolve().parent
+    / "modelo_energiAI.pkl"
+)
+
+modelo = joblib.load(MODEL_PATH)
 
 
 # ============================================
