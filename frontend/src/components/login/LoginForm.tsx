@@ -45,10 +45,7 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <div>
-        <label
-          htmlFor="login-email"
-          className="mb-2 block text-sm font-medium"
-        >
+        <label htmlFor="login-email" className="mb-2 block text-sm font-medium">
           Email
         </label>
         <input
@@ -74,8 +71,8 @@ export function LoginForm() {
       </div>
 
       <label
-      htmlFor="login-password"
-      className="mb-2 block text-sm font-medium"
+        htmlFor="login-password"
+        className="mb-2 block text-sm font-medium"
       >
         Senha
       </label>
@@ -98,6 +95,7 @@ export function LoginForm() {
 
         <button
           type="button"
+          aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
           onClick={() => setShowPassword((current) => !current)}
           className="
             absolute
@@ -109,11 +107,6 @@ export function LoginForm() {
           "
         >
           {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-          aria-label={
-            showPassword
-            ? "Ocultar senha"
-            : "Mostrar senha"
-          }
         </button>
 
         {errors.password && (
@@ -121,10 +114,10 @@ export function LoginForm() {
         )}
       </div>
 
-        {submitError ? (
-  <div
-    role="alert"
-    className="
+      {submitError ? (
+        <div
+          role="alert"
+          className="
       rounded-xl
       border
       border-red-200
@@ -133,10 +126,10 @@ export function LoginForm() {
       text-sm
       text-red-700
     "
-  >
-    {submitError}
-  </div>
-) : null}
+        >
+          {submitError}
+        </div>
+      ) : null}
 
       <button
         type="submit"

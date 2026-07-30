@@ -39,9 +39,9 @@ export function Dashboard() {
         />
 
         <StatCard
-          title="Economia"
+          title="Custo Estimado Mensal"
           value={dashboardData.economia}
-          description = "Economia estimada mensal"
+          description = "Custo estimado mensal"
           icon={<CircleDollarSign size={28} />}
         />
 
