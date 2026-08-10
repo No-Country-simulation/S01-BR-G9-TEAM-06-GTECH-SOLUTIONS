@@ -5,70 +5,113 @@ import {
   CalendarClock,
 } from "lucide-react";
 
-export function AISettingsCard() {
-  return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+import { useTranslation } from "@/i18n/useTranslation";
 
-      <h2 className="mb-6 text-xl font-bold">
-        Inteligência Artificial
+export function AISettingsCard() {
+  const { t } = useTranslation();
+
+  return (
+    <div>
+      <h2
+        className="
+          mb-6
+          text-xl
+          font-bold
+          text-slate-900
+          dark:text-white
+        "
+      >
+        {t("artificialIntelligence")}
       </h2>
 
       <div className="space-y-5">
+
+        {/* Modelo */}
 
         <div className="flex items-center justify-between">
 
           <div className="flex items-center gap-3">
             <Brain className="text-yellow-500" />
-            <span>Modelo</span>
+
+            <span className="text-slate-700 dark:text-slate-200">
+              {t("aiModel")}
+            </span>
           </div>
 
-          <span className="font-semibold">
+          <span className="font-semibold text-slate-900 dark:text-white">
             Random Forest
           </span>
 
         </div>
 
+        {/* Precisão */}
+
         <div className="flex items-center justify-between">
 
           <div className="flex items-center gap-3">
             <Activity className="text-green-500" />
-            <span>Precisão</span>
+
+            <span className="text-slate-700 dark:text-slate-200">
+              {t("aiAccuracy")}
+            </span>
           </div>
 
-          <span className="font-semibold">
+          <span className="font-semibold text-slate-900 dark:text-white">
             98,5%
           </span>
 
         </div>
 
+        {/* Status da API */}
+
         <div className="flex items-center justify-between">
 
           <div className="flex items-center gap-3">
             <ShieldCheck className="text-blue-500" />
-            <span>Status da API</span>
+
+            <span className="text-slate-700 dark:text-slate-200">
+              {t("apiStatus")}
+            </span>
           </div>
 
-          <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-700">
-            Online
+          <span
+            className="
+              rounded-full
+              bg-green-100
+              px-3
+              py-1
+              text-sm
+              font-semibold
+              text-green-700
+
+              dark:bg-green-500/20
+              dark:text-green-400
+            "
+          >
+            {t("online")}
           </span>
 
         </div>
+
+        {/* Última atualização */}
 
         <div className="flex items-center justify-between">
 
           <div className="flex items-center gap-3">
             <CalendarClock className="text-yellow-500" />
-            <span>Última atualização</span>
+
+            <span className="text-slate-700 dark:text-slate-200">
+              {t("lastUpdate")}
+            </span>
           </div>
 
-          <span className="font-semibold">
-            Hoje
+          <span className="font-semibold text-slate-900 dark:text-white">
+            {t("today")}
           </span>
 
         </div>
 
       </div>
-
     </div>
   );
 }

@@ -1,107 +1,186 @@
 import type { HistoryItem } from "../context";
+import type { AnalyticsPeriod } from "../components/dashboard/analytics/AnalyticsPeriodSelector";
 
 export type AnalyticsData = {
   totalAnalises: number;
   consumoMedio: number;
+  maiorConsumo: number;
+  menorConsumo: number;
   economiaTotal: number;
   perfilPredominante: string;
-  insights: string[];
+  insights: {
+  analysisCount: number;
+  averageConsumption: number;
+  highestConsumption: number;
+  lowestConsumption: number;
+  highConsumption: boolean;
+  profile: "Eficiente" | "Moderado" | "Ineficiente" | "Nenhum";
+};
 };
 
 export function generateAnalytics(
-  history: HistoryItem[]
+  history: HistoryItem[],
+  period: AnalyticsPeriod
 ): AnalyticsData {
 
-  const totalAnalises = history.length;
+  let filteredHistory = [...history];
+
+  const hoje = new Date();
+
+  switch (period) {
+    case "Hoje":
+      filteredHistory = history.filter((item) => {
+        const data = new Date(item.createdAt);
+        return data.toDateString() === hoje.toDateString();
+      });
+      break;
+
+    case "Semana": {
+      const semana = new Date();
+      semana.setDate(hoje.getDate() - 7);
+
+      filteredHistory = history.filter((item) => {
+        const data = new Date(item.createdAt);
+        return data >= semana && data <= hoje;
+      });
+
+      break;
+    }
+
+    case "Mês":
+      filteredHistory = history.filter((item) => {
+        const data = new Date(item.createdAt);
+
+        return (
+          data.getMonth() === hoje.getMonth() &&
+          data.getFullYear() === hoje.getFullYear()
+        );
+      });
+      break;
+
+    case "Ano":
+      filteredHistory = history.filter((item) => {
+        const data = new Date(item.createdAt);
+
+        return data.getFullYear() === hoje.getFullYear();
+      });
+      break;
+  }
+
+  const totalAnalises = filteredHistory.length;
 
   if (totalAnalises === 0) {
     return {
       totalAnalises: 0,
       consumoMedio: 0,
+      maiorConsumo: 0,
+      menorConsumo: 0,
       economiaTotal: 0,
       perfilPredominante: "Nenhum",
-      insights: [
-        "Nenhuma análise foi realizada ainda."
-      ]
+      insights: {
+      analysisCount: 0,
+      averageConsumption: 0,
+      highestConsumption: 0,
+      lowestConsumption: 0,
+      highConsumption: false,
+      profile: "Nenhum",
+    },
     };
   }
 
+  // ----------------------------
+  // Consumos
+  // ----------------------------
+
+  const consumos = filteredHistory.map((item) =>
+    Number(item.consumo.replace(" kWh", ""))
+  );
+
+  const maiorConsumo = Math.max(...consumos);
+
+  const menorConsumo = Math.min(...consumos);
+
   const consumoMedio =
-    history.reduce(
-      (acc, item) =>
-        acc + Number(item.consumo.replace(" kWh", "")),
-      0
-    ) / totalAnalises;
+    consumos.reduce((acc, value) => acc + value, 0) /
+    totalAnalises;
 
-  const eficientes = history.filter(
-    item => item.categoria === "Eficiente"
+  // ----------------------------
+  // Perfis
+  // ----------------------------
+
+  const eficientes = filteredHistory.filter(
+    (item) => item.perfil === "Eficiente"
   ).length;
 
-  const moderados = history.filter(
-    item => item.categoria === "Moderado"
+  const moderados = filteredHistory.filter(
+    (item) => item.perfil === "Moderado"
   ).length;
 
-  const ineficientes = history.filter(
-    item => item.categoria === "Ineficiente"
+  const ineficientes = filteredHistory.filter(
+    (item) => item.perfil === "Ineficiente"
   ).length;
 
-  let perfilPredominante = "Moderado";
+  let perfilPredominante:
+  | "Eficiente"
+  | "Moderado"
+  | "Ineficiente" = "Moderado";
 
-  if (
-    eficientes >= moderados &&
-    eficientes >= ineficientes
-  ) {
-    perfilPredominante = "Eficiente";
-  }
+if (
+  eficientes >= moderados &&
+  eficientes >= ineficientes
+) {
+  perfilPredominante = "Eficiente";
+} else if (
+  ineficientes >= eficientes &&
+  ineficientes >= moderados
+) {
+  perfilPredominante = "Ineficiente";
+}
 
-  if (
-    ineficientes >= moderados &&
-    ineficientes >= eficientes
-  ) {
-    perfilPredominante = "Ineficiente";
-  }
+  // ----------------------------
+  // Economia
+  // ----------------------------
 
-  const economiaTotal = totalAnalises * 315;
-
-  const insights: string[] = [];
-
-  insights.push(
-    `Foram realizadas ${totalAnalises} análises.`
-  );
-
-  insights.push(
-    `Consumo médio de ${consumoMedio.toFixed(0)} kWh.`
-  );
-
-  if (perfilPredominante === "Eficiente") {
-    insights.push(
-      "A maioria das análises apresenta excelente eficiência energética."
+  const economiaTotal = filteredHistory.reduce(
+  (acc, item) => {
+    const economia = Number(
+      item.economia
+        .replace("R$", "")
+        .replace(/\./g, "")
+        .replace(",", ".")
+        .trim()
     );
-  }
 
-  if (perfilPredominante === "Moderado") {
-    insights.push(
-      "A maior parte das análises está em um perfil moderado."
-    );
-  }
+    return acc + (Number.isNaN(economia) ? 0 : economia);
+  },
+  0
+);
 
-  if (perfilPredominante === "Ineficiente") {
-    insights.push(
-      "Grande parte das análises apresenta alto consumo energético."
-    );
-  }
+  // ----------------------------
+  // Insights
+  // ----------------------------
 
-  if (consumoMedio > 600) {
-    insights.push(
-      "O consumo médio está elevado. Considere reduzir o uso em horários de pico."
-    );
-  }
+  const insights = {
+  analysisCount: totalAnalises,
+
+  averageConsumption: consumoMedio,
+
+  highestConsumption: maiorConsumo,
+
+  lowestConsumption: menorConsumo,
+
+  highConsumption: consumoMedio > 600,
+
+  profile: perfilPredominante,
+};
 
   return {
-    totalAnalises,
-    consumoMedio,
-    economiaTotal,
-    perfilPredominante,
-    insights,
-  };
+  totalAnalises,
+  consumoMedio,
+  maiorConsumo,
+  menorConsumo,
+  economiaTotal,
+  perfilPredominante,
+  insights,
+};
 }

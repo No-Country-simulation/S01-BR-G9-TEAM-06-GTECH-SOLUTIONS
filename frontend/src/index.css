@@ -1,1 +1,19 @@
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+.motion-reduce *,
+.motion-reduce *::before,
+.motion-reduce *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+
+.contrast-125 {
+  filter: contrast(1.25);
+}
+
+html {
+  scroll-behavior: smooth;
+}

@@ -71,7 +71,7 @@ export function ExecutiveMetrics() {
 
             <div
               key={card.titulo}
-              className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm min-h-[170px]"
+              className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm min-h-42.5"
             >
 
               <Icon

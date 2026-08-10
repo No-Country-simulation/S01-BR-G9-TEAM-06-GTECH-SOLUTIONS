@@ -5,16 +5,39 @@ import { Sidebar } from "../components/layout/Sidebar";
 
 export function MainLayout() {
   return (
-    <div className="flex min-h-screen bg-slate-100">
+    <div
+      className="
+        min-h-screen
+        bg-slate-100
+        transition-colors
+        duration-300
+
+        dark:bg-slate-950
+      "
+    >
       <Sidebar />
 
-      <main className="flex-1">
+      <div
+        className="
+          ml-72
+          transition-colors
+          duration-300
+        "
+      >
         <Header />
 
-        <div className="p-8">
-          <Outlet />
-        </div>
-      </main>
+        <main
+          className="
+            pt-20
+            transition-colors
+            duration-300
+          "
+        >
+          <div className="p-8">
+            <Outlet />
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

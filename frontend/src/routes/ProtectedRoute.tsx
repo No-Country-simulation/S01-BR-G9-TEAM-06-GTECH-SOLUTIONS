@@ -8,13 +8,18 @@ type ProtectedRouteProps = {
   children: ReactNode;
 };
 
-export function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, loading } = useAuth();
-  if (loading) {
-    return null;
-  }
+export function ProtectedRoute({
+  children,
+}: ProtectedRouteProps) {
+  const { isAuthenticated } = useAuth();
+
   if (!isAuthenticated) {
-    return <Navigate to={ROUTES.LANDING} replace />;
+    return (
+      <Navigate
+        to={ROUTES.LOGIN}
+        replace
+      />
+    );
   }
 
   return <>{children}</>;

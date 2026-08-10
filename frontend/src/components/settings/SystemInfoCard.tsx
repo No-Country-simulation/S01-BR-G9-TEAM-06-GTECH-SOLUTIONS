@@ -5,74 +5,104 @@ import {
   Brain,
 } from "lucide-react";
 
-export function SystemInfoCard() {
-  return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+import { useTranslation } from "@/i18n/useTranslation";
 
-      <h2 className="mb-6 text-xl font-bold">
-        Informações do Sistema
+export function SystemInfoCard() {
+  const { t } = useTranslation();
+
+  return (
+    <div>
+      <h2 className="mb-6 text-xl font-bold text-slate-900 dark:text-white">
+        {t("systemInformation")}
       </h2>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
 
-        <div className="rounded-2xl bg-slate-50 p-5">
+        {/* Front-end */}
+        <div
+          className="
+            rounded-2xl
+            bg-slate-50
+            p-5
 
+            dark:bg-slate-800
+          "
+        >
           <Cpu className="mb-3 text-yellow-500" />
 
-          <p className="text-sm text-slate-500">
-            Front-end
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            {t("frontend")}
           </p>
 
-          <h3 className="font-bold">
+          <h3 className="font-bold text-slate-900 dark:text-white">
             React 19
           </h3>
-
         </div>
 
-        <div className="rounded-2xl bg-slate-50 p-5">
+        {/* Back-end */}
+        <div
+          className="
+            rounded-2xl
+            bg-slate-50
+            p-5
 
+            dark:bg-slate-800
+          "
+        >
           <Server className="mb-3 text-blue-500" />
 
-          <p className="text-sm text-slate-500">
-            Back-end
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            {t("backend")}
           </p>
 
-          <h3 className="font-bold">
+          <h3 className="font-bold text-slate-900 dark:text-white">
             Spring Boot
           </h3>
-
         </div>
 
-        <div className="rounded-2xl bg-slate-50 p-5">
+        {/* Machine Learning */}
+        <div
+          className="
+            rounded-2xl
+            bg-slate-50
+            p-5
 
+            dark:bg-slate-800
+          "
+        >
           <Brain className="mb-3 text-green-500" />
 
-          <p className="text-sm text-slate-500">
-            Machine Learning
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            {t("machineLearning")}
           </p>
 
-          <h3 className="font-bold">
+          <h3 className="font-bold text-slate-900 dark:text-white">
             Scikit-Learn
           </h3>
-
         </div>
 
-        <div className="rounded-2xl bg-slate-50 p-5">
+        {/* Banco */}
+        <div
+          className="
+            rounded-2xl
+            bg-slate-50
+            p-5
 
+            dark:bg-slate-800
+          "
+        >
           <Database className="mb-3 text-purple-500" />
 
-          <p className="text-sm text-slate-500">
-            Banco
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            {t("database")}
           </p>
 
-          <h3 className="font-bold">
-            PostgreSQL
+          <h3 className="font-bold text-slate-900 dark:text-white">
+            MySQL
           </h3>
-
         </div>
 
       </div>
-
     </div>
   );
 }

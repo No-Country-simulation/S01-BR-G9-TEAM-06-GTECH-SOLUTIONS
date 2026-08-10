@@ -1,7 +1,6 @@
 export const ROUTES = {
   LANDING: "/",
   LOGIN: "/login",
-  SIGNUP: "/cadastro",
 
   DASHBOARD: "/dashboard",
   NEW_ANALYSIS: "/nova-analise",

@@ -1,7 +1,10 @@
 import { Brain, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { useDashboard } from "../../context";
+import { useTranslation } from "@/i18n/useTranslation";
 
 export function ConsumptionInsights() {
+  const { t } = useTranslation();
+
   const { history } = useDashboard();
 
   if (history.length === 0) return null;
@@ -20,15 +23,15 @@ export function ConsumptionInsights() {
     ((ultimo - primeiro) / primeiro) * 100;
 
   const eficientes = history.filter(
-    item => item.categoria === "Eficiente"
+    item => item.perfil === "Eficiente"
   ).length;
 
   const moderados = history.filter(
-    item => item.categoria === "Moderado"
+    item => item.perfil === "Moderado"
   ).length;
 
   const ineficientes = history.filter(
-    item => item.categoria === "Ineficiente"
+    item => item.perfil === "Ineficiente"
   ).length;
 
   let perfil = "Moderado";
@@ -54,14 +57,26 @@ export function ConsumptionInsights() {
       : "text-yellow-500";
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div
+          className="
+            rounded-3xl
+            border
+            border-slate-200
+            bg-white
+            p-6
+            shadow-sm
+            transition-colors
 
+            dark:bg-slate-900
+            dark:border-slate-700
+          "
+        >
       <div className="mb-6 flex items-center gap-3">
 
         <Brain className="text-yellow-500" />
 
-        <h2 className="text-xl font-bold">
-          Insights da IA
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+          {t("aiInsights")}
         </h2>
 
       </div>
@@ -72,87 +87,91 @@ export function ConsumptionInsights() {
 
           <Icon className={color} />
 
-          <span>
+          <span className="text-slate-700 dark:text-slate-300">
 
             {variacao > 5 &&
-              `O consumo aumentou ${variacao.toFixed(1)}%.`}
+              t("consumptionIncreased").replace(
+                "{value}",
+                variacao.toFixed(1)
+              )}
 
             {variacao < -5 &&
-              `O consumo reduziu ${Math.abs(
-                variacao
-              ).toFixed(1)}%.`}
+              t("consumptionReduced").replace(
+                "{value}",
+                Math.abs(variacao).toFixed(1)
+              )}
 
             {Math.abs(variacao) <= 5 &&
-              "O consumo permanece estável."}
+              t("consumptionStable")}
 
           </span>
 
         </div>
 
-        <div>
+        <div className="text-slate-700 dark:text-slate-300">
 
-          <strong>Consumo médio:</strong>{" "}
+          <strong>{t("averageConsumption")}:</strong>{" "}
           {media.toFixed(0)} kWh
 
         </div>
 
-        <div>
+        <div className="text-slate-700 dark:text-slate-300">
 
-          <strong>Perfil predominante:</strong>{" "}
+          <strong>{t("dominantProfile")}:</strong>{" "}
           {perfil}
 
         </div>
 
-        <div>
+        <div className="text-slate-700 dark:text-slate-300">
 
-            <strong>Nível de risco:</strong>{" "}
+            <strong>{t("riskLevel")}:</strong>{" "}
 
             {perfil === "Eficiente" && (
                 <span className="text-green-600 font-semibold">
-                Baixo
+                {t("low")}
                 </span>
             )}
 
             {perfil === "Moderado" && (
                 <span className="text-yellow-600 font-semibold">
-                Médio
+                {t("medium")}
                 </span>
             )}
 
             {perfil === "Ineficiente" && (
                 <span className="text-red-600 font-semibold">
-                Alto
+                {t("high")}
                 </span>
             )}
 
         </div>
 
-        <div>
+        <div className="text-slate-700 dark:text-slate-300">
 
-          <strong>Recomendação:</strong>{" "}
+          <strong>{t("recommendation")}:</strong>{" "}
 
           {perfil === "Eficiente" &&
-            "Continue mantendo os bons hábitos de consumo."}
+            t("efficientRecommendation")}
 
           {perfil === "Moderado" &&
-            "Pequenos ajustes podem gerar economia significativa."}
+            t("moderateRecommendation")}
 
           {perfil === "Ineficiente" &&
-            "Reveja os equipamentos de maior consumo e os horários de utilização."}
+            t("inefficientRecommendation")}
 
         </div>
 
-        <div>
+        <div className="text-slate-700 dark:text-slate-300">
 
-            <strong>Precisão do modelo:</strong>{" "}
+            <strong>{t("modelAccuracy")}:</strong>{" "}
 
             98,5%
 
         </div>
 
-        <div>
+        <div className="text-slate-700 dark:text-slate-300">
 
-            <strong>Total de análises:</strong>{" "}
+            <strong>{t("totalAnalysis")}:</strong>{" "}
 
             {history.length}
 

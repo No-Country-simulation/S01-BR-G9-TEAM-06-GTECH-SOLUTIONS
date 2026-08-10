@@ -10,67 +10,78 @@ import {
   exportToExcel,
 } from "../../services/exportService";
 
+import { useTranslation } from "@/i18n/useTranslation";
+
 export function ExportPanel() {
-    
-    const { history } = useDashboard();
+  const { history } = useDashboard();
+
+  const { t, language } = useTranslation();
 
   return (
+    <div
+      className="
+        rounded-3xl
+        border
+        border-slate-200
+        bg-white
+        p-6
+        shadow-sm
+        transition-colors
+        duration-300
 
-    <div className="rounded-3xl border bg-white p-6 shadow-sm">
-
-      <h2 className="mb-6 text-xl font-bold">
-
-        Exportação
-
+        dark:bg-slate-900
+        dark:border-slate-700
+      "
+    >
+      <h2 className="mb-6 text-xl font-bold text-slate-900 dark:text-white">
+        {t("exportation")}
       </h2>
 
       <div className="flex flex-wrap gap-4">
-
+        {/* PDF */}
         <button
-            onClick={() => exportToPDF(history)}
-            className="
-                flex items-center gap-3
-                rounded-xl
-                bg-red-500
-                px-6
-                py-3
-                text-white
-                transition
-                hover:bg-red-600
-            "
-            >
-
-
+          onClick={() => exportToPDF(history, language)}
+          className="
+            flex
+            items-center
+            gap-3
+            rounded-xl
+            bg-red-500
+            px-6
+            py-3
+            font-semibold
+            text-white
+            transition
+            hover:bg-red-600
+          "
+        >
           <FileDown size={20} />
 
-          Exportar PDF
-
+          {t("exportPDF")}
         </button>
 
+        {/* Excel */}
         <button
-            onClick={() => exportToExcel(history)}
-            className="
-                flex items-center gap-3
-                rounded-xl
-                bg-green-600
-                px-6
-                py-3
-                text-white
-                transition
-                hover:bg-green-700
-            "
-            >
+          onClick={() => exportToExcel(history, language)}
+          className="
+            flex
+            items-center
+            gap-3
+            rounded-xl
+            bg-green-600
+            px-6
+            py-3
+            font-semibold
+            text-white
+            transition
+            hover:bg-green-700
+          "
+        >
+          <FileSpreadsheet size={20} />
 
-            <FileSpreadsheet size={20} />
-
-            Exportar Excel
-
+          {t("exportExcel")}
         </button>
-
       </div>
-
     </div>
-
   );
-
 }

@@ -2,7 +2,7 @@ import type { Dispatch, SetStateAction } from "react";
 
 export type DashboardData = {
   consumoAtual: string;
-  perfil: string;
+  perfil: "Eficiente" | "Moderado" | "Ineficiente";
   economia: string;
   precisao: string;
 
@@ -13,9 +13,20 @@ export type DashboardData = {
 
 export type HistoryItem = {
   id: string;
+
   data: string;
-  categoria: string;
+
+  createdAt: string;
+
+  perfil: "Eficiente" | "Moderado" | "Ineficiente";
+
   consumo: string;
+
+  economia: string;
+
+  precisao: string;
+
+  observacao?: string;
 };
 
 export type DashboardContextType = {

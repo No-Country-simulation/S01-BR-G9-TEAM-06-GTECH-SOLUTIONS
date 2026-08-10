@@ -1,89 +1,150 @@
 import {
   ResponsiveContainer,
-  ComposedChart,
-  Bar,
-  Line,
+  AreaChart,
+  Area,
   CartesianGrid,
   Tooltip,
   XAxis,
   YAxis,
-  Legend,
 } from "recharts";
 
-import { useDashboard } from "../../context";;
+import { useDashboard } from "../../context/useDashboard";
 
+import type { AnalyticsPeriod } from "./analytics/AnalyticsPeriodSelector";
 
-export function EnergyChart() {
+import { filterHistoryByPeriod } from "../../services/analytics/filterHistoryByPeriod";
+
+import { useTranslation } from "../../i18n/useTranslation";
+
+type EnergyChartProps = {
+  selectedPeriod: AnalyticsPeriod;
+};
+
+export function EnergyChart({
+  selectedPeriod,
+}: EnergyChartProps) {
+
   const { history } = useDashboard();
 
-const data = [...history]
-  .slice(0,7)
-  .reverse()
-  .map((item) => ({
-    day: item.data,
-    consumo: Number(item.consumo.replace(" kWh", "")),
-  }));
+  const { t } = useTranslation();
+
+  const filteredHistory = filterHistoryByPeriod(
+    history,
+    selectedPeriod
+  );
+
+  const data = filteredHistory
+    .slice()
+    .reverse()
+    .map((item, index) => ({
+      name: `${index + 1}`,
+      consumo: Number(
+        item.consumo.replace(" kWh", "")
+      ),
+    }));
 
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-slate-800">
-          Consumo semanal
-        </h2>
 
-        <p className="text-sm text-slate-500">
-          Consumo estimado em kWh durante os últimos 7 dias.
-        </p>
-      </div>
+    <div className="h-96">
 
-      <div className="h-80">
-        <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={data}>
-            <CartesianGrid
-              strokeDasharray="3 3"
-              vertical={false}
-            />
+      <ResponsiveContainer width="100%" height="100%">
 
-            <XAxis
-              dataKey="day"
-              tickFormatter={(value) => value.slice(0, 5)}
-            />
+        <AreaChart data={data}>
 
-            <YAxis />
-            <Legend />
+          <defs>
 
-            <Tooltip
-              contentStyle={{
-                borderRadius: 16,
-                border: "none",
-                boxShadow: "0 8px 25px rgba(0,0,0,.15)",
-              }}
-              formatter={(value) => [`${value} kWh`, "Consumo"]}
-            />
+            <linearGradient
+              id="colorConsumo"
+              x1="0"
+              y1="0"
+              x2="0"
+              y2="1"
+            >
 
-            <Bar
-              dataKey="consumo"
-              fill = '#EAB308'
-              radius={[10,10,0,0]}
-            />
+              <stop
+                offset="5%"
+                stopColor="#FACC15"
+                stopOpacity={0.45}
+              />
 
-            <Line
-              type="monotone"
-              dataKey="consumo"
-              stroke="#2563EB"
-              strokeWidth={3}
-              dot={{
-                r: 5,
-                fill: "#2563EB",
-              }}
-              activeDot={{
-                r: 7,
-              }}
-            />
+              <stop
+                offset="95%"
+                stopColor="#FACC15"
+                stopOpacity={0}
+              />
 
-          </ComposedChart>
-        </ResponsiveContainer>
-      </div>
+            </linearGradient>
+
+          </defs>
+
+          <CartesianGrid
+            strokeDasharray="3 3"
+            stroke="#334155"
+            opacity={0.25}
+          />
+
+          <XAxis
+            dataKey="name"
+            tick={{
+              fill: "#94A3B8",
+            }}
+            axisLine={{
+              stroke: "#475569",
+            }}
+            tickLine={{
+              stroke: "#475569",
+            }}
+          />
+
+          <YAxis
+            tick={{
+              fill: "#94A3B8",
+            }}
+            axisLine={{
+              stroke: "#475569",
+            }}
+            tickLine={{
+              stroke: "#475569",
+            }}
+          />
+
+          <Tooltip
+            formatter={(value) => [
+              `${value ?? 0} ${t("kwh")}`,
+              t("Consumption"),
+            ]}
+            labelFormatter={(label) =>
+              `${t("analysis")} ${label}`
+            }
+            contentStyle={{
+              backgroundColor: "#0F172A",
+              border: "1px solid #334155",
+              borderRadius: 14,
+              color: "#F8FAFC",
+            }}
+            labelStyle={{
+              color: "#F8FAFC",
+            }}
+          />
+
+          <Area
+            type="monotone"
+            dataKey="consumo"
+            stroke="#FACC15"
+            strokeWidth={3}
+            fillOpacity={1}
+            fill="url(#colorConsumo)"
+            activeDot={{
+              r: 7,
+            }}
+          />
+
+        </AreaChart>
+
+      </ResponsiveContainer>
+
     </div>
+
   );
+
 }

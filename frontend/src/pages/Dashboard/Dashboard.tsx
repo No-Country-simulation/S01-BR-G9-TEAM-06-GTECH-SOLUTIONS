@@ -1,82 +1,66 @@
+import { useNavigate } from "react-router-dom";
+
 import { useDashboard } from "../../context";
-import { WelcomeBanner } from "../../components/dashboard/WelcomeBanner";
-import { StatCard } from "../../components/dashboard/StatCard";
-import { EnergyChart } from "../../components/dashboard/EnergyChart";
-import { RecommendationPanel } from "../../components/dashboard/RecommendationPanel";
-import { HistoryTable } from "../../components/dashboard/HistoryTable";
-import { ExecutiveMetrics } from "../../components/dashboard/ExecutiveMetrics";
+
+import { DashboardEmpty } from "../../components/dashboard/empty/DashboardEmpty";
+
+import { DashboardHero } from "../../components/dashboard/hero/DashboardHero";
+import { DashboardMetrics } from "../../components/dashboard/DashboardMetrics";
+
+import { EnergyAnalytics } from "../../components/dashboard/analytics/EnergyAnalytics";
+
+import { RecommendationPanel } from "../../components/dashboard/recommendation/RecommendationPanel";
+
 import { ConsumptionInsights } from "../../components/dashboard/ConsumptionInsights";
 
-import {
-  Bolt,
-  CircleDollarSign,
-  Gauge,
-  TrendingUp,
-} from "lucide-react";
+import { HistoryTable } from "../../components/dashboard/HistoryTable";
 
+import { ROUTES } from "../../constants/routes";
 
 export function Dashboard() {
-  const { dashboardData } = useDashboard();
 
+  const { history } = useDashboard();
+
+const navigate = useNavigate();
+
+const handleNewAnalysis = () => {
+  navigate(ROUTES.NEW_ANALYSIS);
+};
+
+  // Dashboard vazio
+  if (history.length === 0) {
+    return (
+      <DashboardEmpty
+        onNewAnalysis={handleNewAnalysis}
+      />
+    );
+  }
+
+  // Dashboard Premium
   return (
     <>
-      <WelcomeBanner />
+      <DashboardHero />
 
-      <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <DashboardMetrics />
 
-        <StatCard
-          title="Consumo Atual"
-          value={dashboardData.consumoAtual}
-          description = "+8% em relação à semana passada"
-          icon={<Bolt size={28} />}
-        />
-
-        <StatCard
-          title="Perfil"
-          value={dashboardData.perfil}
-          description="Classificação da IA"
-          icon={<Gauge size={28} />}
-        />
-
-        <StatCard
-          title="Custo Estimado Mensal"
-          value={dashboardData.economia}
-          description = "Custo estimado mensal"
-          icon={<CircleDollarSign size={28} />}
-        />
-
-        <StatCard
-          title="Precisão"
-          value={dashboardData.precisao}
-          description = "Modelo Random Forest"
-          icon={<TrendingUp size={28} />}
-        />
-
-        
+      <section className="mt-12">
+        <EnergyAnalytics />
       </section>
 
-      <ExecutiveMetrics />
+      <section className="mt-10 grid gap-8 xl:grid-cols-3">
 
-      <section className="mt-8 grid gap-8 lg:grid-cols-2">
-
-        <div className="space-y-8">
-
-          <EnergyChart />
-
-          <ConsumptionInsights />
-
+        <div className="xl:col-span-2">
+          <RecommendationPanel />
         </div>
 
-        <RecommendationPanel />
-        
+        <ConsumptionInsights />
+
       </section>
 
       <section className="mt-8">
-
-        <HistoryTable limit={5}/>
-
+        <HistoryTable limit={5} />
       </section>
-      
+
     </>
   );
 }

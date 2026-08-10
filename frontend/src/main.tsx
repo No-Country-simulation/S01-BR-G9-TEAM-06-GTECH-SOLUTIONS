@@ -1,14 +1,22 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 
-import { DashboardProvider } from "./context/DashboardProvider";
+import App from "./App";
 
-createRoot(document.getElementById('root')!).render(
+import { ThemeProvider } from "./context/theme/ThemeProvider";
+import { SettingsProvider } from "./context/settings/SettingsProvider";
+import { I18nProvider } from "./i18n/I18nProvider";
+
+import "./index.css";
+
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
-  <DashboardProvider>
-    <App />
-  </DashboardProvider>
-</StrictMode>
-)
+    <SettingsProvider>
+      <ThemeProvider>
+        <I18nProvider>
+          <App />
+        </I18nProvider>
+      </ThemeProvider>
+    </SettingsProvider>
+  </StrictMode>
+);

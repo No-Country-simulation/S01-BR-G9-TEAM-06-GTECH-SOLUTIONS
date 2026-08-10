@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useDashboard } from "../../context";
+
 import { HistoryTable } from "../../components/dashboard/HistoryTable";
 
 export function History() {
@@ -11,37 +12,52 @@ export function History() {
     "Todos" | "Eficiente" | "Moderado" | "Ineficiente"
   >("Todos");
 
-const statistics = history.reduce(
-  (acc, item) => {
-    acc.total++;
+  const statistics = history.reduce(
+    (acc, item) => {
+      acc.total++;
 
-    switch (item.categoria) {
-      case "Eficiente":
-        acc.eficientes++;
-        break;
+      switch (item.perfil) {
+        case "Eficiente":
+          acc.eficientes++;
+          break;
 
-      case "Moderado":
-        acc.moderados++;
-        break;
+        case "Moderado":
+          acc.moderados++;
+          break;
 
-      case "Ineficiente":
-        acc.ineficientes++;
-        break;
+        case "Ineficiente":
+          acc.ineficientes++;
+          break;
+      }
+
+      return acc;
+    },
+    {
+      total: 0,
+      eficientes: 0,
+      moderados: 0,
+      ineficientes: 0,
     }
+  );
 
-    return acc;
-  },
-  {
-    total: 0,
-    eficientes: 0,
-    moderados: 0,
-    ineficientes: 0,
-  }
-);
+  const economiaMedia =
+    history.length === 0
+      ? "R$ 0"
+      : `R$ ${Math.round(
+          history.reduce((acc, item) => {
+            const valor = Number(
+              item.economia
+                .replace("R$", "")
+                .replace(",", ".")
+                .trim()
+            );
+
+            return acc + valor;
+          }, 0) / history.length
+        )}`;
 
   return (
     <div>
-
       {/* Cabeçalho */}
 
       <div className="mb-8">
@@ -98,7 +114,7 @@ const statistics = history.reduce(
           </p>
 
           <h2 className="mt-2 text-3xl font-bold text-green-600">
-            R$ 315
+            {economiaMedia}
           </h2>
 
         </div>
@@ -111,7 +127,7 @@ const statistics = history.reduce(
 
         <input
           type="text"
-          placeholder="Pesquisar por data, categoria ou consumo..."
+          placeholder="Pesquisar por data, perfil ou consumo..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="
@@ -179,7 +195,7 @@ const statistics = history.reduce(
 
       </div>
 
-      {/* Tabela */}
+      {/* Timeline */}
 
       <HistoryTable
         search={search}

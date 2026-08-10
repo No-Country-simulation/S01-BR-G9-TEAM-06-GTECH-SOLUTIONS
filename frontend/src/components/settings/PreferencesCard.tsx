@@ -1,14 +1,32 @@
-import { Moon, Bell, Sparkles, RefreshCcw } from "lucide-react";
+import {
+  Moon,
+  Bell,
+  Sparkles,
+  RefreshCcw,
+} from "lucide-react";
+
+import { useTranslation } from "@/i18n/useTranslation";
 
 export function PreferencesCard() {
-  return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+  const { t } = useTranslation();
 
-      <h2 className="mb-6 text-xl font-bold">
-        Preferências
+  return (
+    <div>
+      <h2
+        className="
+          mb-6
+          text-xl
+          font-bold
+          text-slate-900
+          dark:text-white
+        "
+      >
+        {t("preferences")}
       </h2>
 
       <div className="space-y-5">
+
+        {/* Tema escuro */}
 
         <label className="flex items-center justify-between">
 
@@ -16,13 +34,20 @@ export function PreferencesCard() {
 
             <Moon className="text-yellow-500" />
 
-            <span>Tema escuro</span>
+            <span className="text-slate-700 dark:text-slate-200">
+              {t("darkTheme")}
+            </span>
 
           </div>
 
-          <input type="checkbox" />
+          <input
+            type="checkbox"
+            className="h-5 w-5 accent-yellow-500"
+          />
 
         </label>
+
+        {/* Notificações */}
 
         <label className="flex items-center justify-between">
 
@@ -30,13 +55,21 @@ export function PreferencesCard() {
 
             <Bell className="text-yellow-500" />
 
-            <span>Notificações</span>
+            <span className="text-slate-700 dark:text-slate-200">
+              {t("notifications")}
+            </span>
 
           </div>
 
-          <input type="checkbox" defaultChecked />
+          <input
+            type="checkbox"
+            defaultChecked
+            className="h-5 w-5 accent-yellow-500"
+          />
 
         </label>
+
+        {/* Animações */}
 
         <label className="flex items-center justify-between">
 
@@ -44,13 +77,21 @@ export function PreferencesCard() {
 
             <Sparkles className="text-yellow-500" />
 
-            <span>Mostrar animações</span>
+            <span className="text-slate-700 dark:text-slate-200">
+              {t("showAnimations")}
+            </span>
 
           </div>
 
-          <input type="checkbox" defaultChecked />
+          <input
+            type="checkbox"
+            defaultChecked
+            className="h-5 w-5 accent-yellow-500"
+          />
 
         </label>
+
+        {/* Atualização automática */}
 
         <label className="flex items-center justify-between">
 
@@ -58,16 +99,21 @@ export function PreferencesCard() {
 
             <RefreshCcw className="text-yellow-500" />
 
-            <span>Atualização automática</span>
+            <span className="text-slate-700 dark:text-slate-200">
+              {t("automaticUpdate")}
+            </span>
 
           </div>
 
-          <input type="checkbox" defaultChecked />
+          <input
+            type="checkbox"
+            defaultChecked
+            className="h-5 w-5 accent-yellow-500"
+          />
 
         </label>
 
       </div>
-
     </div>
   );
 }

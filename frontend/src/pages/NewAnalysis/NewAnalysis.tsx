@@ -4,128 +4,167 @@ import { Zap } from "lucide-react";
 import { LoadingAnalysis } from "../../components/analysis/LoadingAnalysis";
 import { AnalysisResult } from "../../components/analysis/AnalysisResult";
 import { useDashboard } from "../../context";
-import { mapAnalysisToDashboard } from "../../services/analysisMapper";
-import {
-  analyzeConsumption,
-  getAnalysisErrorMessage,
-} from "../../services/analysisService";
-import type {
-  AnaliseEnergeticaRequest,
-  TipoImovel,
-} from "../../types/analysis";
+import { simulateAnalysis } from "../../services/analysisSimulator";
+
+import { useTranslation } from "@/i18n/useTranslation";
+
 
 export function NewAnalysis() {
-  const [loading, setLoading] = useState(false);
-  const [finished, setFinished] = useState(false);
+    const { t } = useTranslation();
 
-  const [consumo, setConsumo] = useState("");
-  const [equipamentos, setEquipamentos] = useState("");
-  const [tipoImovel, setTipoImovel] = useState<TipoImovel>("Casa");
-  const [horasAltoConsumo, setHorasAltoConsumo] = useState("");
-  const [usoHorarioPico, setUsoHorarioPico] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [finished, setFinished] = useState(false);
 
-  const [error, setError] = useState("");
+    const [consumo, setConsumo] = useState("");
+    const [equipamentos, setEquipamentos] = useState("");
+    const [tipoImovel, setTipoImovel] = useState<
+    "Casa" | "Apartamento" | "Comercial" >("Casa");
+    const [horasAltoConsumo, setHorasAltoConsumo] = useState("");
+    const [usoHorarioPico, setUsoHorarioPico] = useState(false);
 
-  const { setDashboardData, setHistory } = useDashboard();
+    const [error, setError] = useState("");
 
-  async function handleAnalysis() {
-    setError("");
-    setFinished(false);
+    const {
+      setDashboardData,
+      setHistory,
+    } = useDashboard();
 
-    if (
-      consumo.trim() === "" ||
-      equipamentos.trim() === "" ||
-      horasAltoConsumo.trim() === ""
-    ) {
-      setError("Preencha todos os campos obrigatórios.");
-      return;
-    }
+    async function handleAnalysis() {
 
-    const consumoNumber = Number(consumo);
-    const equipamentosNumber = Number(equipamentos);
-    const horasNumber = Number(horasAltoConsumo);
-
-    if (
-      !Number.isFinite(consumoNumber) ||
-      consumoNumber <= 0 ||
-      consumoNumber > 700
-    ) {
-      setError("O consumo deve ser maior que zero e no máximo 700 kWh.");
-      return;
-    }
-
-    if (
-      !Number.isInteger(equipamentosNumber) ||
-      equipamentosNumber < 1 ||
-      equipamentosNumber > 17
-    ) {
-      setError("A quantidade de equipamentos deve estar entre 1 e 17.");
-      return;
-    }
-
-    if (!Number.isInteger(horasNumber) || horasNumber < 1 || horasNumber > 24) {
-      setError("As horas de alto consumo devem estar entre 1 e 24.");
-      return;
-    }
-
-    const request: AnaliseEnergeticaRequest = {
-      consumo_kwh: consumoNumber,
-      uso_horario_pico: usoHorarioPico,
-      quantidade_equipamentos: equipamentosNumber,
-      tipo_imovel: tipoImovel,
-      horas_alto_consumo: horasNumber,
-    };
-
-    setLoading(true);
-
-    try {
-      const response = await analyzeConsumption(request);
-
-      const dashboardData = mapAnalysisToDashboard(request, response);
-
-      setDashboardData(dashboardData);
-
-      setHistory((currentHistory) => [
-        {
-          id: crypto.randomUUID(),
-          data: new Date().toLocaleDateString("pt-BR"),
-          categoria: dashboardData.perfil,
-          consumo: dashboardData.consumoAtual,
-        },
-        ...currentHistory,
-      ]);
-
-      setFinished(true);
-    } catch (requestError) {
-      setError(getAnalysisErrorMessage(requestError));
-    } finally {
-      setLoading(false);
-    }
+       // Campos obrigatórios
+  if (
+    consumo.trim() === "" ||
+    equipamentos.trim() === "" ||
+    horasAltoConsumo.trim() === ""
+  ) {
+    setError(t("requiredFields"));;
+    return;
   }
+
+  const consumoNumber = Number(consumo);
+  const equipamentosNumber = Number(equipamentos);
+  const horasNumber = Number(horasAltoConsumo);
+
+  // Consumo
+  if (consumoNumber <= 0) {
+    setError(t("invalidConsumption"));
+    return;
+  }
+
+  // Equipamentos
+  if (equipamentosNumber <= 0) {
+    setError(t("invalidEquipment"));
+    return;
+  }
+
+  // Horas
+  if (horasNumber < 1 || horasNumber > 24) {
+    setError(t("invalidHours"));
+    return;
+  }
+
+  setError("");
+
+  setFinished(false);
+  setLoading(true);
+
+      // Limpa mensagens de erro anteriores
+  setError("");
+
+  setFinished(false);
+  setLoading(true);
+
+  setTimeout(() => {
+    const resultado = simulateAnalysis({
+      consumo_kwh: Number(consumo),
+      quantidade_equipamentos: Number(equipamentos),
+      tipo_imovel: tipoImovel as "Casa" | "Apartamento" | "Comercial",
+      horas_alto_consumo: Number(horasAltoConsumo),
+      uso_horario_pico: usoHorarioPico,
+    });
+
+    setDashboardData(resultado);
+
+setHistory((prevHistory) => [
+  {
+    id: crypto.randomUUID(),
+
+    data: new Date().toLocaleString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+
+    createdAt: new Date().toISOString(),
+
+    perfil: resultado.perfil,
+
+    consumo: resultado.consumoAtual,
+
+    economia: resultado.economia,
+
+    precisao: resultado.precisao,
+
+    observacao: resultado.mensagem,
+  },
+
+  ...prevHistory,
+]);
+
+    setLoading(false);
+    setFinished(true);
+  }, 2000);
+    
+  
+}
 
   return (
     <div className="mx-auto max-w-5xl">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-slate-800">
-          Nova Análise Energética
-        </h1>
 
-        <p className="mt-3 text-slate-500">
-          Informe os dados do imóvel para que a Inteligência Artificial
-          identifique o perfil de consumo energético.
+      <div className="mb-8">
+
+        <h1 className="text-4xl font-bold text-slate-800 dark:text-white">
+          {t("NewAnalysis")}
+        </h1>
+    
+
+        <p className="mt-3 text-slate-500 dark:text-slate-400">
+          {t("newAnalysisDescription")}
         </p>
+
       </div>
 
-      <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+      <div
+        className="
+          rounded-3xl
+          border
+          border-slate-200
+          bg-white
+          p-8
+          shadow-sm
+
+          dark:bg-slate-900
+          dark:border-slate-700
+        "
+      >
+
         <div className="mb-8 flex items-center gap-3">
+
           <Zap className="text-yellow-500" size={34} />
 
-          <h2 className="text-2xl font-semibold">Dados da Análise</h2>
+          <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">
+            {t("analysisData")}
+          </h2>
+
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
+
           <div>
-            <label className="mb-2 block font-medium">Consumo (kWh)</label>
+            <label className="mb-2 block font-medium text-slate-700 dark:text-slate-300">
+              {t("consumptionLabel")}
+            </label>
 
             <input
               type="number"
@@ -133,13 +172,28 @@ export function NewAnalysis() {
               placeholder="Ex.: 420"
               value={consumo}
               onChange={(e) => setConsumo(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-yellow-500"
+              className="
+                  w-full
+                  rounded-xl
+                  border
+                  border-slate-300
+                  bg-white
+                  p-3
+                  text-slate-900
+                  outline-none
+                  focus:border-yellow-500
+
+                  dark:border-slate-600
+                  dark:bg-slate-800
+                  dark:text-white
+                  dark:placeholder:text-slate-500
+                  "
             />
           </div>
 
           <div>
-            <label className="mb-2 block font-medium">
-              Quantidade de Equipamentos
+            <label className="mb-2 block font-medium text-slate-700 dark:text-slate-300">
+              {t("equipmentLabel")}
             </label>
 
             <input
@@ -147,27 +201,67 @@ export function NewAnalysis() {
               placeholder="Ex.: 10"
               value={equipamentos}
               onChange={(e) => setEquipamentos(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-yellow-500"
+              className="
+                    w-full
+                    rounded-xl
+                    border
+                    border-slate-300
+                    bg-white
+                    p-3
+                    text-slate-900
+
+                    dark:border-slate-600
+                    dark:bg-slate-800
+                    dark:text-white
+                    "
             />
           </div>
 
           <div>
-            <label className="mb-2 block font-medium">Tipo do Imóvel</label>
+            <label className="mb-2 block font-medium text-slate-700 dark:text-slate-300">
+              {t("propertyType")}
+            </label>
 
             <select
-              value={tipoImovel}
-              onChange={(e) => setTipoImovel(e.target.value as TipoImovel)}
-              className="w-full rounded-xl border border-slate-300 p-3"
-            >
-              <option value="Casa">Casa</option>
-              <option value="Apartamento">Apartamento</option>
-              <option value="Comércio">Comércio</option>
-            </select>
+            value={tipoImovel}
+            onChange={(e) =>
+              setTipoImovel(
+                e.target.value as "Casa" | "Apartamento" | "Comercial"
+              )
+            }
+            className="
+                  w-full
+                  rounded-xl
+                  border
+                  border-slate-300
+                  bg-white
+                  p-3
+                  text-slate-900
+                  transition
+
+                  dark:border-slate-600
+                  dark:bg-slate-800
+                  dark:text-white
+                  "
+          >
+            <option value="Casa" className="bg-white text-slate-900">
+              {t("house")}
+            </option>
+
+            <option value="Apartamento" className="bg-white text-slate-900">
+              {t("apartment")}
+            </option>
+
+            <option value="Comercial" className="bg-white text-slate-900">
+              {t("commercial")}
+            </option>
+          </select>
+
           </div>
 
           <div>
-            <label className="mb-2 block font-medium">
-              Horas de Alto Consumo
+            <label className="mb-2 block font-medium text-slate-700 dark:text-slate-300">
+              {t("peakHours")}
             </label>
 
             <input
@@ -177,12 +271,30 @@ export function NewAnalysis() {
               placeholder="Ex.: 8"
               value={horasAltoConsumo}
               onChange={(e) => setHorasAltoConsumo(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 p-3 outline-none focus:border-yellow-500"
+              className="
+                    w-full
+                    rounded-xl
+                    border
+                    border-slate-300
+                    bg-white
+                    p-3
+                    text-slate-900
+                    outline-none
+                    transition
+                    focus:border-yellow-500
+
+                    dark:border-slate-600
+                    dark:bg-slate-800
+                    dark:text-white
+                    dark:placeholder:text-slate-500
+                    "
             />
           </div>
+
         </div>
 
         <div className="mt-8 flex items-center gap-3">
+
           <input
             type="checkbox"
             id="pico"
@@ -190,54 +302,64 @@ export function NewAnalysis() {
             onChange={(e) => setUsoHorarioPico(e.target.checked)}
           />
 
-          <label htmlFor="pico">Utiliza equipamentos em horário de pico</label>
+          <label 
+          htmlFor="pico"
+          className="text-slate-700 dark:text-slate-300"
+          >
+            {t("peakUsage")}
+          </label>
+
         </div>
 
         <button
-          type="button"
-          onClick={handleAnalysis}
-          disabled={loading}
+            onClick={handleAnalysis}
           className="
-    mt-10
-    rounded-xl
-    bg-yellow-500
-    px-8
-    py-4
-    font-semibold
-    text-white
-    transition
-    hover:bg-yellow-600
-    disabled:cursor-not-allowed
-    disabled:opacity-60
-  "
+            mt-10
+            rounded-xl
+            bg-yellow-500
+            px-8
+            py-4
+            font-semibold
+            text-white
+            transition
+            hover:bg-yellow-600
+          "
         >
-          {loading ? "Analisando..." : "Analisar Consumo"}
+          {error && (
+            <div
+              className="
+                    mt-8
+                    rounded-2xl
+                    border
+                    border-red-200
+                    bg-red-50
+                    p-4
+                    text-red-700
+                    shadow-sm
+
+                    dark:border-red-900
+                    dark:bg-red-950/40
+                    dark:text-red-300
+                    "
+            >
+              <span className="font-semibold">
+                {t("warning")}
+              </span>
+
+              <p className="mt-1">
+                {error}
+              </p>
+            </div>
+          )}
+          {t("analyzeConsumption")}
         </button>
 
-        {error ? (
-          <div
-            role="alert"
-            className="
-      mt-6
-      rounded-2xl
-      border
-      border-red-200
-      bg-red-50
-      p-4
-      text-red-700
-      shadow-sm
-    "
-          >
-            <span className="font-semibold">Atenção</span>
+        {loading && <LoadingAnalysis />}
 
-            <p className="mt-1">{error}</p>
-          </div>
-        ) : null}
+        {finished && <AnalysisResult />}
 
-        {loading ? <LoadingAnalysis /> : null}
-
-        {finished ? <AnalysisResult /> : null}
       </div>
+
     </div>
   );
 }

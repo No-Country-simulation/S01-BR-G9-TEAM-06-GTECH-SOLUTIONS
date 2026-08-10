@@ -2,28 +2,43 @@ import { ReportsSummary } from "../../components/reports/ReportsSummary";
 import { ExportPanel } from "../../components/reports/ExportPanel";
 import { ReportsHistory } from "../../components/reports/ReportsHistory";
 
+import { useTranslation } from "@/i18n/useTranslation";
+
 export function Reports() {
+  const { t } = useTranslation();
+
   return (
-    <div className="space-y-8">
-
+    <div>
       <div>
-
-        <h1 className="text-4xl font-bold">
-          Relatórios
+        <h1
+          className="
+            text-4xl
+            font-bold
+            text-slate-900
+            dark:text-white
+          "
+        >
+          {t("reports")}
         </h1>
 
-        <p className="mt-2 text-slate-500">
-          Visualize e exporte informações detalhadas das análises realizadas.
+        <p
+          className="
+            mt-2
+            text-slate-500
+            dark:text-slate-400
+          "
+        >
+          {t("reportsDescription")}
         </p>
-
       </div>
 
-      <ReportsSummary />
+      <div className="mt-8 space-y-10">
+        <ReportsSummary />
 
-      <ExportPanel />
+        <ExportPanel />
 
-      <ReportsHistory />
-
+        <ReportsHistory />
+      </div>
     </div>
   );
 }
