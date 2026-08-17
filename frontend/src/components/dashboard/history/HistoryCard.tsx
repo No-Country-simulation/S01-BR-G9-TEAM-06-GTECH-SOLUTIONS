@@ -1,3 +1,4 @@
+import { formatCurrency } from "@/utils/currency";
 import {
   CalendarDays,
   CircleDollarSign,
@@ -13,7 +14,7 @@ type HistoryCardProps = {
   data: string;
   perfil: string;
   consumo: string;
-  economia: string;
+  custoEstimadoMensal: number;
 };
 
 function getBadgeColor(perfil?: string) {
@@ -36,7 +37,7 @@ export function HistoryCard({
   data,
   perfil,
   consumo,
-  economia,
+  custoEstimadoMensal,
 }: HistoryCardProps) {
 
   const navigate = useNavigate();
@@ -169,7 +170,7 @@ export function HistoryCard({
                 dark:text-green-400
               "
             >
-              {economia}
+              {formatCurrency(custoEstimadoMensal)}
             </span>
 
           </div>

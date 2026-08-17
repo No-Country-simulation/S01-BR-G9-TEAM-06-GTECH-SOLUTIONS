@@ -1,3 +1,4 @@
+import { formatCurrency } from "@/utils/currency";
 import {
   BadgeCheck,
   CircleDollarSign,
@@ -124,11 +125,11 @@ export function AnalysisResult() {
           />
 
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            {t("estimatedsavings")}
+            {t("estimatedMonthlyCost")}
           </p>
 
           <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
-            {dashboardData.economia}
+            {formatCurrency(dashboardData.custoEstimadoMensal)}
           </h3>
 
         </div>

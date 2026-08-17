@@ -10,7 +10,10 @@ export function EconomyCard() {
 
   const { dashboardData } = useDashboard();
 
-  const custo = dashboardData.economia.replace("R$", "").trim();
+  const custo = dashboardData.custoEstimadoMensal.toLocaleString(
+    "pt-BR",
+    { minimumFractionDigits: 2, maximumFractionDigits: 2 },
+  );
   
   const { t } = useTranslation();
 

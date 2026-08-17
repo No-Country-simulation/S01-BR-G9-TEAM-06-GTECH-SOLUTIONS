@@ -4,7 +4,7 @@ import {
   EyeOff,
 } from "lucide-react";
 
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { useForm } from "react-hook-form";
 import {
@@ -12,6 +12,7 @@ import {
 } from "@hookform/resolvers/zod";
 
 import { useAuth } from "../../context/auth/useAuth";
+import { getAuthErrorMessage } from "../../services/authService";
 
 import { ROUTES } from "../../constants/routes";
 
@@ -27,6 +28,7 @@ export function LoginForm() {
 
   const [showPassword, setShowPassword] =
     useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const navigate = useNavigate();
 
@@ -51,6 +53,8 @@ export function LoginForm() {
   async function onSubmit(
     data: LoginFormData
   ) {
+    setSubmitError("");
+
     try {
       await login(
         data.email,
@@ -59,10 +63,7 @@ export function LoginForm() {
 
       navigate(ROUTES.DASHBOARD);
     } catch (error) {
-      console.error(
-        "Erro ao realizar login:",
-        error
-      );
+      setSubmitError(getAuthErrorMessage(error));
     }
   }
 
@@ -89,8 +90,9 @@ export function LoginForm() {
         </label>
 
         <input
-          type="text"
+          type="email"
           inputMode="email"
+          autoComplete="email"
           placeholder={t("emailPlaceholder")}
           {...register("email")}
           className="
@@ -151,6 +153,7 @@ export function LoginForm() {
                 ? "text"
                 : "password"
             }
+            autoComplete="current-password"
             placeholder={t("passwordPlaceholder")}
             {...register("password")}
             className="
@@ -222,6 +225,12 @@ export function LoginForm() {
         )}
       </div>
 
+      {submitError ? (
+        <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+          {submitError}
+        </p>
+      ) : null}
+
       {/* Entrar */}
       <button
         type="submit"
@@ -243,6 +252,13 @@ export function LoginForm() {
           ? t("loggingIn")
           : t("login")}
       </button>
+
+      <p className="text-center text-sm text-slate-600 dark:text-slate-300">
+        {t("noAccountYet")}{" "}
+        <Link to={ROUTES.SIGNUP} className="font-semibold text-yellow-600 hover:text-yellow-700 dark:text-yellow-400">
+          {t("createAccount")}
+        </Link>
+      </p>
     </form>
   );
 }

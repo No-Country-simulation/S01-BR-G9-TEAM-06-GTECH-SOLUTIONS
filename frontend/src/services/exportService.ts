@@ -1,3 +1,4 @@
+import { formatCurrency } from "@/utils/currency";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -150,13 +151,7 @@ function calculateExportAnalytics(history: HistoryItem[]) {
 
   const totalSavings = history.reduce(
     (acc, item) => {
-      const value = Number(
-        item.economia
-          .replace("R$", "")
-          .replace(/\./g, "")
-          .replace(",", ".")
-          .trim()
-      );
+      const value = item.custoEstimadoMensal;
 
       return acc + (Number.isNaN(value) ? 0 : value);
     },
@@ -375,7 +370,9 @@ export function exportToExcel(
 
     [labels.consumption]: item.consumo,
 
-    [labels.totalSavings]: item.economia,
+    [labels.totalSavings]: formatCurrency(
+      item.custoEstimadoMensal,
+    ),
   }));
 
   const worksheet =

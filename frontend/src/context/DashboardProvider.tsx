@@ -21,7 +21,7 @@ import {
 const INITIAL_DASHBOARD: DashboardData = {
   consumoAtual: "",
   perfil: "Moderado",
-  economia: "",
+  custoEstimadoMensal: 0,
   precisao: "",
   mensagem: "",
   recomendacoes: [],

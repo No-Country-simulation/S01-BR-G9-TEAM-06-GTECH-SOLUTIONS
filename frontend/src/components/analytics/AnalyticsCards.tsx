@@ -1,3 +1,4 @@
+import { formatCurrency } from "@/utils/currency";
 import {
   History,
   Bolt,
@@ -136,11 +137,11 @@ export function AnalyticsCards() {
         />
 
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          {t("totalSavings")}
+          {t("averageMonthlyCost")}
         </p>
 
         <h2 className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">
-          R$ {analytics.economiaTotal}
+          {formatCurrency(analytics.custoMedioMensal)}
         </h2>
 
       </div>

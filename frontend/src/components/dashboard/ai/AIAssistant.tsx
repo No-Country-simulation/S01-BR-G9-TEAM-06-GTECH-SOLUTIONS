@@ -1,3 +1,4 @@
+import { formatCurrency } from "@/utils/currency";
 import {
   Bolt,
   Clock3,
@@ -65,8 +66,8 @@ export function AIAssistant() {
     case "predominantProfile":
       return t("PredominantProfile");
 
-    case "accumulatedSavings":
-      return t("accumulatedSavings");
+    case "averageMonthlyCost":
+      return t("averageMonthlyCost");
 
     case "analysisCount":
       return t("Analysiscount");
@@ -119,8 +120,8 @@ export function AIAssistant() {
         ]
       );
 
-    case "accumulatedSavings":
-      return t("accumulatedSavingsDescription")
+    case "averageMonthlyCost":
+      return t("averageMonthlyCostDescription")
         .replace("{value}", `R$ ${item.value}`);
 
     case "analysisCount":
@@ -139,18 +140,13 @@ export function AIAssistant() {
   const insights =
     generateAIInsights(history);
 
-  const economiaTotal = history.reduce((acc, item) => {
-    return (
-      acc +
-      Number(
-        item.economia
-          .replace("R$", "")
-          .replace(".", "")
-          .replace(",", ".")
-          .trim()
-      )
-    );
-  }, 0);
+  const custoMedioMensal =
+    history.length === 0
+      ? 0
+      : history.reduce(
+          (acc, item) => acc + item.custoEstimadoMensal,
+          0,
+        ) / history.length;
 
   return (
     <div className="space-y-8">
@@ -222,7 +218,7 @@ export function AIAssistant() {
     ? TrendingUp
     : item.type === "lowestConsumption"
     ? TrendingDown
-    : item.type === "accumulatedSavings"
+    : item.type === "averageMonthlyCost"
     ? CircleDollarSign
     : item.type === "analysisCount"
     ? Clock3
@@ -255,11 +251,11 @@ export function AIAssistant() {
             ? t("performAnalysis")
             : t("continueAnalysis").replace(
                 "{value}",
-                `R$ ${economiaTotal.toFixed(2)}`
+                formatCurrency(custoMedioMensal)
               )
         }
 
-        saving={`R$ ${economiaTotal.toFixed(2)}`}
+        saving={formatCurrency(custoMedioMensal)}
       />
 
     </div>

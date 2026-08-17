@@ -1,3 +1,4 @@
+import { formatCurrency } from "@/utils/currency";
 import { useDashboard } from "../../../context";
 
 import { HistoryHeader } from "./HistoryHeader";
@@ -35,7 +36,9 @@ export function HistoryTimeline({
       item.data.toLowerCase().includes(query) ||
       item.perfil.toLowerCase().includes(query) ||
       item.consumo.toLowerCase().includes(query) ||
-      item.economia.toLowerCase().includes(query)
+      formatCurrency(item.custoEstimadoMensal)
+        .toLowerCase()
+        .includes(query)
     );
   });
 
@@ -149,7 +152,7 @@ if (internalFilter !== "Todos") {
                     data={item.data}
                     perfil={item.perfil}
                     consumo={item.consumo}
-                    economia={item.economia}
+                    custoEstimadoMensal={item.custoEstimadoMensal}
                   />
 
                 </div>

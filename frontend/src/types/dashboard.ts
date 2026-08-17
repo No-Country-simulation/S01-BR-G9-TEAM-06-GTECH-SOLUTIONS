@@ -1,7 +1,7 @@
 export interface DashboardData {
   consumoAtual: string;
   perfil: string;
-  economia: string;
+  custoEstimadoMensal: number;
   precisao: string;
 }
 

@@ -1,3 +1,4 @@
+import { formatCurrency } from "@/utils/currency";
 import { useState } from "react";
 import { useDashboard } from "../../context";
 
@@ -40,21 +41,13 @@ export function History() {
     }
   );
 
-  const economiaMedia =
+  const custoMedioMensal =
     history.length === 0
-      ? "R$ 0"
-      : `R$ ${Math.round(
-          history.reduce((acc, item) => {
-            const valor = Number(
-              item.economia
-                .replace("R$", "")
-                .replace(",", ".")
-                .trim()
-            );
-
-            return acc + valor;
-          }, 0) / history.length
-        )}`;
+      ? 0
+      : history.reduce(
+          (acc, item) => acc + item.custoEstimadoMensal,
+          0,
+        ) / history.length;
 
   return (
     <div>
@@ -114,7 +107,7 @@ export function History() {
           </p>
 
           <h2 className="mt-2 text-3xl font-bold text-green-600">
-            {economiaMedia}
+            {formatCurrency(custoMedioMensal)}
           </h2>
 
         </div>

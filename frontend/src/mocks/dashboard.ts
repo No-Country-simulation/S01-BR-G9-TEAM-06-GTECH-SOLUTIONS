@@ -1,7 +1,7 @@
 export const dashboardData = {
   consumoAtual: "420 kWh",
   perfil: "Moderado",
-  economia: "R$ 315",
+  custoEstimadoMensal: 315,
   precisao: "98,5%",
 };
 

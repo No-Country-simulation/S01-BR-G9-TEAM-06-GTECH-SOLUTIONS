@@ -9,7 +9,7 @@ export type AnalysisInput = {
 export type AnalysisResult = {
   consumoAtual: string;
   perfil: "Eficiente" | "Moderado" | "Ineficiente";
-  economia: string;
+  custoEstimadoMensal: number;
   precisao: string;
   mensagem: string;
   recomendacoes: string[];
@@ -37,14 +37,14 @@ export function simulateAnalysis(
   if (data.uso_horario_pico) score += 2;
 
   let perfil: AnalysisResult["perfil"];
-  let economia: string;
+  let custoEstimadoMensal: number;
   let precisao: string;
   let mensagem: string;
   let recomendacoes: string[];
 
   if (score <= 3) {
     perfil = "Eficiente";
-    economia = "R$ 90";
+    custoEstimadoMensal = 90;
     precisao = "99,4%";
     mensagem =
       "Parabéns! Seu consumo está dentro do esperado.";
@@ -58,7 +58,7 @@ export function simulateAnalysis(
 
   else if (score <= 7) {
     perfil = "Moderado";
-    economia = "R$ 315";
+    custoEstimadoMensal = 315;
     precisao = "98,5%";
     mensagem =
       "Há oportunidades de economia. Confira as recomendações.";
@@ -72,7 +72,7 @@ export function simulateAnalysis(
 
   else {
     perfil = "Ineficiente";
-    economia = "R$ 620";
+    custoEstimadoMensal = 620;
     precisao = "97,8%";
     mensagem =
       "Seu consumo está acima do ideal. Recomendamos atenção aos horários de pico.";
@@ -87,7 +87,7 @@ export function simulateAnalysis(
   return {
     consumoAtual: `${data.consumo_kwh} kWh`,
     perfil,
-    economia,
+    custoEstimadoMensal,
     precisao,
     mensagem,
     recomendacoes,

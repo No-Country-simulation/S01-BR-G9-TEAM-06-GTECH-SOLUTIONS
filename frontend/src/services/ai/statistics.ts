@@ -6,7 +6,7 @@ export function calculateStatistics(history: HistoryItem[]) {
       media: 0,
       maior: 0,
       menor: 0,
-      totalEconomia: 0,
+      custoMedioMensal: 0,
       quantidade: 0,
     };
   }
@@ -15,14 +15,8 @@ export function calculateStatistics(history: HistoryItem[]) {
     Number(item.consumo.replace(" kWh", ""))
   );
 
-  const economias = history.map(item =>
-    Number(
-      item.economia
-        .replace("R$", "")
-        .replace(".", "")
-        .replace(",", ".")
-        .trim()
-    )
+  const custos = history.map(
+    item => item.custoEstimadoMensal
   );
 
   return {
@@ -34,10 +28,9 @@ export function calculateStatistics(history: HistoryItem[]) {
 
     menor: Math.min(...consumos),
 
-    totalEconomia: economias.reduce(
-      (a, b) => a + b,
-      0
-    ),
+    custoMedioMensal:
+      custos.reduce((a, b) => a + b, 0) /
+      custos.length,
 
     quantidade: history.length,
   };

@@ -1,3 +1,4 @@
+import { formatCurrency } from "@/utils/currency";
 import {
   ArrowRight,
   Bolt,
@@ -43,8 +44,9 @@ const ultimaAnalise =
 const perfil =
   dashboardData?.perfil ?? t("unclassified");
 
-const economia =
-  dashboardData?.economia ?? "R$ 0";
+const custoEstimado = formatCurrency(
+  dashboardData?.custoEstimadoMensal ?? 0,
+);
 
 const score =
   dashboardData?.precisao ?? "--";
@@ -244,7 +246,7 @@ const score =
                 <div>
 
                   <p className="text-sm text-slate-400">
-                    {t("EstimatedSavings")}
+                    {t("estimatedMonthlyCost")}
                   </p>
 
                   <p className="font-semibold">
@@ -256,7 +258,7 @@ const score =
               </div>
 
               <span className="text-2xl font-bold">
-                {economia}
+                {custoEstimado}
               </span>
 
             </div>

@@ -4,7 +4,12 @@ import { Zap } from "lucide-react";
 import { LoadingAnalysis } from "../../components/analysis/LoadingAnalysis";
 import { AnalysisResult } from "../../components/analysis/AnalysisResult";
 import { useDashboard } from "../../context";
-import { simulateAnalysis } from "../../services/analysisSimulator";
+import { mapAnalysisToDashboard } from "../../services/analysisMapper";
+import {
+  analyzeConsumption,
+  getAnalysisErrorMessage,
+} from "../../services/analysisService";
+import type { TipoImovel } from "../../types/analysis";
 
 import { useTranslation } from "@/i18n/useTranslation";
 
@@ -17,8 +22,7 @@ export function NewAnalysis() {
 
     const [consumo, setConsumo] = useState("");
     const [equipamentos, setEquipamentos] = useState("");
-    const [tipoImovel, setTipoImovel] = useState<
-    "Casa" | "Apartamento" | "Comercial" >("Casa");
+    const [tipoImovel, setTipoImovel] = useState<TipoImovel>("Casa");
     const [horasAltoConsumo, setHorasAltoConsumo] = useState("");
     const [usoHorarioPico, setUsoHorarioPico] = useState(false);
 
@@ -30,95 +34,76 @@ export function NewAnalysis() {
     } = useDashboard();
 
     async function handleAnalysis() {
+      setError("");
+      setFinished(false);
 
-       // Campos obrigatórios
-  if (
-    consumo.trim() === "" ||
-    equipamentos.trim() === "" ||
-    horasAltoConsumo.trim() === ""
-  ) {
-    setError(t("requiredFields"));;
-    return;
-  }
+      if (
+        consumo.trim() === "" ||
+        equipamentos.trim() === "" ||
+        horasAltoConsumo.trim() === ""
+      ) {
+        setError(t("requiredFields"));
+        return;
+      }
 
-  const consumoNumber = Number(consumo);
-  const equipamentosNumber = Number(equipamentos);
-  const horasNumber = Number(horasAltoConsumo);
+      const consumoNumber = Number(consumo);
+      const equipamentosNumber = Number(equipamentos);
+      const horasNumber = Number(horasAltoConsumo);
 
-  // Consumo
-  if (consumoNumber <= 0) {
-    setError(t("invalidConsumption"));
-    return;
-  }
+      if (!Number.isFinite(consumoNumber) || consumoNumber <= 0 || consumoNumber > 700) {
+        setError(t("invalidConsumption"));
+        return;
+      }
 
-  // Equipamentos
-  if (equipamentosNumber <= 0) {
-    setError(t("invalidEquipment"));
-    return;
-  }
+      if (!Number.isInteger(equipamentosNumber) || equipamentosNumber < 1 || equipamentosNumber > 17) {
+        setError(t("invalidEquipment"));
+        return;
+      }
 
-  // Horas
-  if (horasNumber < 1 || horasNumber > 24) {
-    setError(t("invalidHours"));
-    return;
-  }
+      if (!Number.isInteger(horasNumber) || horasNumber < 1 || horasNumber > 24) {
+        setError(t("invalidHours"));
+        return;
+      }
 
-  setError("");
+      setLoading(true);
 
-  setFinished(false);
-  setLoading(true);
+      try {
+        const request = {
+          consumo_kwh: consumoNumber,
+          quantidade_equipamentos: equipamentosNumber,
+          tipo_imovel: tipoImovel,
+          horas_alto_consumo: horasNumber,
+          uso_horario_pico: usoHorarioPico,
+        };
+        const response = await analyzeConsumption(request);
+        const result = mapAnalysisToDashboard(request, response);
 
-      // Limpa mensagens de erro anteriores
-  setError("");
-
-  setFinished(false);
-  setLoading(true);
-
-  setTimeout(() => {
-    const resultado = simulateAnalysis({
-      consumo_kwh: Number(consumo),
-      quantidade_equipamentos: Number(equipamentos),
-      tipo_imovel: tipoImovel as "Casa" | "Apartamento" | "Comercial",
-      horas_alto_consumo: Number(horasAltoConsumo),
-      uso_horario_pico: usoHorarioPico,
-    });
-
-    setDashboardData(resultado);
-
-setHistory((prevHistory) => [
-  {
-    id: crypto.randomUUID(),
-
-    data: new Date().toLocaleString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
-
-    createdAt: new Date().toISOString(),
-
-    perfil: resultado.perfil,
-
-    consumo: resultado.consumoAtual,
-
-    economia: resultado.economia,
-
-    precisao: resultado.precisao,
-
-    observacao: resultado.mensagem,
-  },
-
-  ...prevHistory,
-]);
-
-    setLoading(false);
-    setFinished(true);
-  }, 2000);
-    
-  
-}
-
+        setDashboardData(result);
+        setHistory((currentHistory) => [
+          {
+            id: crypto.randomUUID(),
+            data: new Date().toLocaleString("pt-BR", {
+              day: "2-digit",
+              month: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            createdAt: new Date().toISOString(),
+            perfil: result.perfil,
+            consumo: result.consumoAtual,
+            custoEstimadoMensal: result.custoEstimadoMensal,
+            precisao: result.precisao,
+            observacao: result.mensagem,
+          },
+          ...currentHistory,
+        ]);
+        setFinished(true);
+      } catch (requestError) {
+        setError(getAnalysisErrorMessage(requestError));
+      } finally {
+        setLoading(false);
+      }
+    }
   return (
     <div className="mx-auto max-w-5xl">
 
@@ -226,7 +211,7 @@ setHistory((prevHistory) => [
             value={tipoImovel}
             onChange={(e) =>
               setTipoImovel(
-                e.target.value as "Casa" | "Apartamento" | "Comercial"
+                e.target.value as TipoImovel
               )
             }
             className="
@@ -252,7 +237,7 @@ setHistory((prevHistory) => [
               {t("apartment")}
             </option>
 
-            <option value="Comercial" className="bg-white text-slate-900">
+            <option value="Comércio" className="bg-white text-slate-900">
               {t("commercial")}
             </option>
           </select>
@@ -312,7 +297,9 @@ setHistory((prevHistory) => [
         </div>
 
         <button
-            onClick={handleAnalysis}
+          type="button"
+          onClick={handleAnalysis}
+          disabled={loading}
           className="
             mt-10
             rounded-xl
@@ -323,37 +310,35 @@ setHistory((prevHistory) => [
             text-white
             transition
             hover:bg-yellow-600
+            disabled:cursor-not-allowed
+            disabled:opacity-60
           "
         >
-          {error && (
-            <div
-              className="
-                    mt-8
-                    rounded-2xl
-                    border
-                    border-red-200
-                    bg-red-50
-                    p-4
-                    text-red-700
-                    shadow-sm
-
-                    dark:border-red-900
-                    dark:bg-red-950/40
-                    dark:text-red-300
-                    "
-            >
-              <span className="font-semibold">
-                {t("warning")}
-              </span>
-
-              <p className="mt-1">
-                {error}
-              </p>
-            </div>
-          )}
           {t("analyzeConsumption")}
         </button>
 
+        {error ? (
+          <div
+            role="alert"
+            className="
+              mt-8
+              rounded-2xl
+              border
+              border-red-200
+              bg-red-50
+              p-4
+              text-red-700
+              shadow-sm
+
+              dark:border-red-900
+              dark:bg-red-950/40
+              dark:text-red-300
+            "
+          >
+            <span className="font-semibold">{t("warning")}</span>
+            <p className="mt-1">{error}</p>
+          </div>
+        ) : null}
         {loading && <LoadingAnalysis />}
 
         {finished && <AnalysisResult />}

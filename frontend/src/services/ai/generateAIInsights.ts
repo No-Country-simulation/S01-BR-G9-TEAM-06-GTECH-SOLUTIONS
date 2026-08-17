@@ -13,7 +13,7 @@ export type AIInsightType =
   | "highestConsumption"
   | "lowestConsumption"
   | "predominantProfile"
-  | "accumulatedSavings"
+  | "averageMonthlyCost"
   | "analysisCount"
   | "recommendation";
 
@@ -95,8 +95,8 @@ export function generateAIInsights(
   });
 
   insights.push({
-    type: "accumulatedSavings",
-    value: Number(stats.totalEconomia.toFixed(2)),
+    type: "averageMonthlyCost",
+    value: Number(stats.custoMedioMensal.toFixed(2)),
   });
 
   insights.push({

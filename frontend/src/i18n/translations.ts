@@ -146,6 +146,8 @@ export const translations = {
 
     estimatedSavings: "Economia",
 
+    estimatedMonthlyCost: "Custo estimado mensal",
+
     AiInsights: "Insights da IA",
 
     AnalysisCount:
@@ -272,8 +274,8 @@ export const translations = {
     PredominantProfile: "Perfil predominante",
     predominantProfileDescription: "{value}.",
 
-    accumulatedSavings: "Economia acumulada",
-    accumulatedSavingsDescription: "{value}",
+    averageMonthlyCost: "Custo médio mensal",
+    averageMonthlyCostDescription: "{value}",
 
     Analysiscount: "Total de análises",
     analysisCountDescription: "{value} análises realizadas.",
@@ -436,6 +438,22 @@ export const translations = {
 
 Welcome: "Bem-vindo",
 loginDescription: "Faça login para acessar sua plataforma.",
+createAccount: "Criar conta",
+signupDescription: "Cadastre-se para acessar o IntelliWatts.",
+    namePlaceholder: "Seu nome completo",
+    confirmPassword: "Confirmar senha",
+    confirmPasswordPlaceholder: "Repita a senha",
+    creatingAccount: "Criando conta...",
+    alreadyHaveAccount: "Já possui uma conta?",
+    noAccountYet: "Ainda não possui uma conta?",
+    signIn: "Entrar",
+    nameRequired: "Informe seu nome.",
+    nameMaxLength: "O nome deve ter no máximo 120 caracteres.",
+    emailMaxLength: "O e-mail deve ter no máximo 254 caracteres.",
+    passwordMin15: "A senha deve ter pelo menos 15 caracteres.",
+    passwordMaxLength: "A senha deve ter no máximo 64 caracteres.",
+    passwordMaxBytes: "A senha deve ter no máximo 72 bytes.",
+    passwordsDoNotMatch: "As senhas não coincidem.",
 
 emailPlaceholder: "Digite seu e-mail",
 
@@ -663,6 +681,8 @@ recommendationPeriodicAnalysis:
 
     estimatedSavings: "Estimated Savings",
 
+    estimatedMonthlyCost: "Estimated monthly cost",
+
     AiInsights: "AI Insights",
 
     AnalysisCount:
@@ -789,8 +809,8 @@ recommendationPeriodicAnalysis:
     PredominantProfile: "Predominant Profile",
     predominantProfileDescription: "{value}.",
 
-    accumulatedSavings: "Accumulated Savings",
-    accumulatedSavingsDescription: "{value}",
+    averageMonthlyCost: "Average monthly cost",
+    averageMonthlyCostDescription: "{value}",
 
     Analysiscount: "Analysis Count",
     analysisCountDescription: "{value} analyses performed.",
@@ -950,6 +970,22 @@ recommendationPeriodicAnalysis:
     "Built with React, Java, FastAPI and Machine Learning.",
 
     landingSubtitle: "Intelligent Energy Analytics",
+    createAccount: "Create account",
+    signupDescription:"Sign up to access IntelliWatts.",
+    namePlaceholder: "Your full name",
+    confirmPassword: "Confirm password",
+    confirmPasswordPlaceholder: "Repeat the password",
+    creatingAccount: "Creating account...",
+    alreadyHaveAccount: "Already have an account?",
+    noAccountYet: "Don't have an account yet?",
+    signIn: "Sign in",
+    nameRequired: "Enter your name.",
+    nameMaxLength: "Name must be at most 120 characters.",
+    emailMaxLength: "Email must be at most 254 characters.",
+    passwordMin15: "Password must be at least 15 characters.",
+    passwordMaxLength: "Password must be at most 64 characters.",
+    passwordMaxBytes: "Password must be at most 72 bytes.",
+    passwordsDoNotMatch: "Passwords do not match.",
 
     Welcome: "Welcome",
     loginDescription: "Log in to access your platform.",
@@ -1465,6 +1501,22 @@ recommendationPeriodicAnalysis:
 
     footerDescription:
     "Desarrollado con React, Java, FastAPI y Machine Learning.",
+    createAccount:"Crear cuenta",
+    signupDescription:"Regístrate para acceder a IntelliWatts.",
+    namePlaceholder: "Tu nombre completo",
+    confirmPassword: "Confirmar contraseña",
+    confirmPasswordPlaceholder: "Repite la contraseña",
+    creatingAccount: "Creando cuenta...",
+    alreadyHaveAccount: "¿Ya tienes una cuenta?",
+    noAccountYet: "¿Aún no tienes una cuenta?",
+    signIn: "Entrar",
+    nameRequired: "Ingresa tu nombre.",
+    nameMaxLength: "El nombre debe tener como máximo 120 caracteres.",
+    emailMaxLength: "El correo debe tener como máximo 254 caracteres.",
+    passwordMin15: "La contraseña debe tener al menos 15 caracteres.",
+    passwordMaxLength: "La contraseña debe tener como máximo 64 caracteres.",
+    passwordMaxBytes: "La contraseña debe tener como máximo 72 bytes.",
+    passwordsDoNotMatch: "Las contraseñas no coinciden.",
 
     landingSubtitle: "Análisis Energético Inteligente",
 

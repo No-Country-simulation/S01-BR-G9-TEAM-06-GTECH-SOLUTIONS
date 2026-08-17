@@ -6,7 +6,7 @@ export type AnalyticsData = {
   consumoMedio: number;
   maiorConsumo: number;
   menorConsumo: number;
-  economiaTotal: number;
+  custoMedioMensal: number;
   perfilPredominante: string;
   insights: {
   analysisCount: number;
@@ -75,7 +75,7 @@ export function generateAnalytics(
       consumoMedio: 0,
       maiorConsumo: 0,
       menorConsumo: 0,
-      economiaTotal: 0,
+      custoMedioMensal: 0,
       perfilPredominante: "Nenhum",
       insights: {
       analysisCount: 0,
@@ -141,20 +141,13 @@ if (
   // Economia
   // ----------------------------
 
-  const economiaTotal = filteredHistory.reduce(
-  (acc, item) => {
-    const economia = Number(
-      item.economia
-        .replace("R$", "")
-        .replace(/\./g, "")
-        .replace(",", ".")
-        .trim()
-    );
-
-    return acc + (Number.isNaN(economia) ? 0 : economia);
-  },
-  0
-);
+  const custoMedioMensal =
+  filteredHistory.length === 0
+    ? 0
+    : filteredHistory.reduce(
+        (acc, item) => acc + item.custoEstimadoMensal,
+        0,
+      ) / filteredHistory.length;
 
   // ----------------------------
   // Insights
@@ -179,7 +172,7 @@ if (
   consumoMedio,
   maiorConsumo,
   menorConsumo,
-  economiaTotal,
+  custoMedioMensal,
   perfilPredominante,
   insights,
 };

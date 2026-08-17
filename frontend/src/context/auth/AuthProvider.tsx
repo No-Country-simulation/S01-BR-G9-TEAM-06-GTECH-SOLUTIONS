@@ -1,5 +1,17 @@
-import { useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 
+import {
+  getCurrentUser,
+  loginUser,
+  logoutUser,
+  registerUser,
+} from "../../services/authService";
 import { AuthContext } from "./AuthContext";
 import type { User } from "./auth.types";
 
@@ -7,81 +19,63 @@ type AuthProviderProps = {
   children: ReactNode;
 };
 
-function getUserNameFromEmail(email: string) {
-  const name = email.split("@")[0];
+export function AuthProvider({ children }: AuthProviderProps) {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  return name
-    .replace(/[._-]/g, " ")
-    .replace(/\b\w/g, (char) => char.toUpperCase());
-}
-
-export function AuthProvider({
-  children,
-}: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(() => {
-    const storedUser = localStorage.getItem("iw_user");
-
-    return storedUser
-      ? JSON.parse(storedUser)
-      : null;
-  });
-
-  const [token, setToken] = useState<string | null>(() => {
-    return localStorage.getItem("iw_token");
-  });
-
-  const loading = false;
-
-  async function login(
-    email: string,
-    senha: string
-  ) {
-    console.log(email, senha);
-
-    // Temporário.
-    // Será substituído pela integração com o backend.
-
-    const fakeUser: User = {
-      id: email,
-      nome: getUserNameFromEmail(email),
-      email,
-    };
-
-    const fakeToken = "TOKEN_TEMPORARIO";
-
-    setUser(fakeUser);
-    setToken(fakeToken);
-
-    localStorage.setItem(
-      "iw_user",
-      JSON.stringify(fakeUser)
-    );
-
-    localStorage.setItem(
-      "iw_token",
-      fakeToken
-    );
-  }
-
-  function logout() {
-    setUser(null);
-    setToken(null);
+  useEffect(() => {
+    let active = true;
 
     localStorage.removeItem("iw_user");
     localStorage.removeItem("iw_token");
-  }
+
+    getCurrentUser()
+      .then((currentUser) => {
+        if (active) setUser(currentUser);
+      })
+      .catch(() => {
+        if (active) setUser(null);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const login = useCallback(async (email: string, senha: string) => {
+    const authenticatedUser = await loginUser({ email, senha });
+    setUser(authenticatedUser);
+  }, []);
+
+  const register = useCallback(async (nome: string, email: string, senha: string) => {
+    await registerUser({ nome, email, senha });
+    await login(email, senha);
+  }, [login]);
+
+  const logout = useCallback(async () => {
+    try {
+      await logoutUser();
+    } catch {
+      // A sessão local precisa ser encerrada mesmo se a rede falhar.
+    } finally {
+      setUser(null);
+    }
+  }, []);
+
+  const value = useMemo(() => ({
+    user,
+    loading,
+    login,
+    register,
+    logout,
+    isAuthenticated: user !== null,
+  }), [user, loading, login, register, logout]);
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        token,
-        loading,
-        login,
-        logout,
-        isAuthenticated: !!token,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

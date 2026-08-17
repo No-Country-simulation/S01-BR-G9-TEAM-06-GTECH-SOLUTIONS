@@ -3,8 +3,8 @@ import type {
   HistoryItem,
 } from "../context/dashboard.types";
 
-const DASHBOARD_KEY = "dashboardData";
-const HISTORY_KEY = "dashboardHistory";
+const DASHBOARD_KEY = "dashboardData.v2";
+const HISTORY_KEY = "dashboardHistory.v2";
 
 export function loadDashboard(): DashboardData | null {
   try {

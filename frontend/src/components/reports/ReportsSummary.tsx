@@ -1,3 +1,4 @@
+import { formatCurrency } from "@/utils/currency";
 import { useDashboard } from "../../context";
 import { generateAnalytics } from "../../services/analyticsService";
 
@@ -98,11 +99,11 @@ export function ReportsSummary() {
         "
       >
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          {t("TotalSavings")}
+          {t("averageMonthlyCost")}
         </p>
 
         <h2 className="mt-2 text-3xl font-bold text-green-600 dark:text-green-400">
-          R$ {analytics.economiaTotal}
+          {formatCurrency(analytics.custoMedioMensal)}
         </h2>
       </div>
 
