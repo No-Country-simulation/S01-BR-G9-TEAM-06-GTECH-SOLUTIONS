@@ -151,7 +151,7 @@ export function HistoryCard({
               dark:text-slate-400
             "
           >
-            {t("historyEstimatedSaving")}
+            {t("estimatedMonthlyCost")}
           </p>
 
           <div className="mt-1 flex items-center gap-2">

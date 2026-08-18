@@ -1216,6 +1216,8 @@ recommendationPeriodicAnalysis:
 
     estimatedSavings: "Ahorro Estimado",
 
+    estimatedMonthlyCost: "Costo mensual estimado",
+
     AiInsights: "Insights de la IA",
 
     AnalysisCount:
@@ -1342,8 +1344,8 @@ recommendationPeriodicAnalysis:
     PredominantProfile: "Perfil predominante",
     predominantProfileDescription: "{value}.",
 
-    accumulatedSavings: "Ahorro acumulado",
-    accumulatedSavingsDescription: "{value}",
+    averageMonthlyCost: "Costo mensual promedio",
+    averageMonthlyCostDescription: "{value}",
 
     Analysiscount: "Total de análisis",
     analysisCountDescription: "{value} análisis realizados.",

@@ -244,7 +244,7 @@ export function AIAssistant() {
       {/* Recomendação */}
 
       <AIRecommendation
-        title={t("estimatedSaving")}
+        title={t("averageMonthlyCost")}
 
         description={
           history.length === 0

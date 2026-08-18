@@ -17,7 +17,8 @@ type ExportLabels = {
   totalAnalyses: string;
   averageConsumption: string;
   predominantProfile: string;
-  totalSavings: string;
+  averageMonthlyCost: string;
+  monthlyCost: string;
   insights: string;
   date: string;
   category: string;
@@ -39,7 +40,8 @@ const translations: Record<ExportLanguage, ExportLabels> = {
     totalAnalyses: "Total de análises",
     averageConsumption: "Consumo médio",
     predominantProfile: "Perfil predominante",
-    totalSavings: "Economia total",
+    averageMonthlyCost: "Custo médio mensal",
+    monthlyCost: "Custo estimado mensal",
     insights: "Insights da IA",
     date: "Data",
     category: "Categoria",
@@ -60,7 +62,8 @@ const translations: Record<ExportLanguage, ExportLabels> = {
     totalAnalyses: "Total analyses",
     averageConsumption: "Average consumption",
     predominantProfile: "Predominant profile",
-    totalSavings: "Total savings",
+    averageMonthlyCost: "Average monthly cost",
+    monthlyCost: "Estimated monthly cost",
     insights: "AI Insights",
     date: "Date",
     category: "Category",
@@ -81,7 +84,8 @@ const translations: Record<ExportLanguage, ExportLabels> = {
     totalAnalyses: "Total de análisis",
     averageConsumption: "Consumo promedio",
     predominantProfile: "Perfil predominante",
-    totalSavings: "Ahorro total",
+    averageMonthlyCost: "Costo mensual promedio",
+    monthlyCost: "Costo mensual estimado",
     insights: "Insights de la IA",
     date: "Fecha",
     category: "Categoría",
@@ -149,20 +153,19 @@ function calculateExportAnalytics(history: HistoryItem[]) {
         | "Ineficiente";
   }
 
-  const totalSavings = history.reduce(
-    (acc, item) => {
-      const value = item.custoEstimadoMensal;
-
-      return acc + (Number.isNaN(value) ? 0 : value);
-    },
-    0
-  );
+  const custoMedioMensal =
+    history.length === 0
+      ? 0
+      : history.reduce(
+          (acc, item) => acc + item.custoEstimadoMensal,
+          0
+        ) / history.length;
 
   return {
     totalAnalyses,
     averageConsumption,
     predominantProfile,
-    totalSavings,
+    custoMedioMensal,
 
     highestConsumption:
       consumptions.length > 0
@@ -265,8 +268,8 @@ export function exportToPDF(
   );
 
   doc.text(
-    `${labels.totalSavings}: R$ ${analytics.totalSavings.toFixed(
-      2
+    `${labels.averageMonthlyCost}: ${formatCurrency(
+      analytics.custoMedioMensal
     )}`,
     14,
     98
@@ -370,7 +373,7 @@ export function exportToExcel(
 
     [labels.consumption]: item.consumo,
 
-    [labels.totalSavings]: formatCurrency(
+    [labels.monthlyCost]: formatCurrency(
       item.custoEstimadoMensal,
     ),
   }));

@@ -2,6 +2,7 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import { ROUTES } from "../../../constants/routes";
+import { useTranslation } from "@/i18n/useTranslation";
 
 type AIRecommendationProps = {
   title: string;
@@ -16,6 +17,7 @@ export function AIRecommendation({
 }: AIRecommendationProps) {
 
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <div
@@ -118,7 +120,7 @@ export function AIRecommendation({
               dark:text-slate-400
             "
           >
-            Economia estimada
+            {t("averageMonthlyCost")}
           </span>
 
           <h4 className="text-2xl font-bold text-green-600 dark:text-green-400">
